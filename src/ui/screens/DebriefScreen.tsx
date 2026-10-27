@@ -126,7 +126,7 @@ export function DebriefScreen({ id }: { id: string }) {
       </header>
 
       <div className="debrief-top">
-        <section className="glass panel-pad medal-card">
+        <section className="glass panel-pad medal-card" data-tilt>
           <MedalIcon medal={medal} size={88} label={medal ? `${MEDAL_NAMES[medal]} medal` : 'No medal'} />
           <div>
             <p className="big-medal">{medal ? MEDAL_NAMES[medal] : 'No medal'}</p>

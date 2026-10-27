@@ -5,6 +5,7 @@ import { focusMainHeading, prefersReducedMotion } from './a11y';
 import { installClickSounds, setSoundEnabled } from './audio';
 import { setVoiceEnabled, stopSpeaking } from './voice';
 import { Splash } from '../ui/Splash';
+import { Embers, installTilt } from '../ui/motion';
 import { NavBar } from '../ui/NavBar';
 import { HomeScreen } from '../ui/screens/HomeScreen';
 import { CreateScreen } from '../ui/screens/CreateScreen';
@@ -86,6 +87,10 @@ function Shell() {
   }, [key]);
 
   useEffect(() => installClickSounds(), []);
+  const reduced = prefersReducedMotion(progress.settings);
+  const reducedRef = useRef(reduced);
+  reducedRef.current = reduced;
+  useEffect(() => installTilt(() => !reducedRef.current), []);
   useEffect(() => { setSoundEnabled(progress.settings.sound); }, [progress.settings.sound]);
   useEffect(() => { setVoiceEnabled(progress.settings.voice); }, [progress.settings.voice]);
 
@@ -96,8 +101,12 @@ function Shell() {
       {!storageAvailable && (
         <p className="banner" role="status">Your browser is blocking local storage, so progress will be lost when you close this tab.</p>
       )}
+      {route.name !== 'play' && !reduced && <Embers />}
       <main id="main" ref={main} className={`main main-${route.name}`}>
-        <Screen route={route} />
+        {/* Keyed by route so each screen eases in as you arrive. */}
+        <div key={key} className="route-in">
+          <Screen route={route} />
+        </div>
       </main>
       <footer className="footer">
         <p>
