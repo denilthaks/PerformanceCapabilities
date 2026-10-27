@@ -1,7 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GameProvider, useGame } from './game';
 import { sectionOf, useRoute, type Route } from './router';
-import { focusMainHeading } from './a11y';
+import { focusMainHeading, prefersReducedMotion } from './a11y';
+import { installClickSounds, setSoundEnabled } from './audio';
+import { setVoiceEnabled, stopSpeaking } from './voice';
+import { Splash } from '../ui/Splash';
 import { NavBar } from '../ui/NavBar';
 import { HomeScreen } from '../ui/screens/HomeScreen';
 import { CreateScreen } from '../ui/screens/CreateScreen';
@@ -70,14 +73,21 @@ function Toasts() {
 
 function Shell() {
   const route = useRoute();
-  const { storageAvailable } = useGame();
+  const { storageAvailable, progress } = useGame();
   const main = useRef<HTMLElement>(null);
   const key = route.name === 'not-found' ? route.path : 'id' in route ? `${route.name}/${route.id}` : route.name;
+  // Decided once per visit, so changing settings mid-intro doesn't restart it.
+  const [introReduced] = useState(() => prefersReducedMotion(progress.settings));
 
   useEffect(() => {
     window.scrollTo(0, 0);
     focusMainHeading(main.current);
+    stopSpeaking();
   }, [key]);
+
+  useEffect(() => installClickSounds(), []);
+  useEffect(() => { setSoundEnabled(progress.settings.sound); }, [progress.settings.sound]);
+  useEffect(() => { setVoiceEnabled(progress.settings.voice); }, [progress.settings.voice]);
 
   return (
     <>
@@ -99,6 +109,7 @@ function Shell() {
         </p>
       </footer>
       <Toasts />
+      <Splash reducedMotion={introReduced} />
       <div id="announcer" className="visually-hidden" aria-live="polite" />
     </>
   );

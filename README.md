@@ -35,6 +35,13 @@ npm run e2e        # after a build: end-to-end checks in Chromium (needs Playwri
 - **Report:** each floor ends with a medal, what it took, how your choices played out, and how many outcomes you haven't seen yet. **Play it differently** to find them; your best medal is kept.
 - **Secrets:** each floor hides a memo from the Tower's founder. They have no markers.
 
+## Opening, sound and voice
+
+- **Opening:** every visit starts with the Performance Capability logo fading in while a red neon ring blooms outward from behind it, then hands over to Home after about five seconds. Click, tap or press any key to skip. Under reduced motion it's a short, still fade.
+- **Sound effects:** buttons, replies, discoveries, secrets and medals each have their own sound. They're synthesized live with the Web Audio API, so there are no audio files.
+- **Voice-over:** dialogue, questions and reactions are spoken in a consistent voice per character, using the browser's built-in text-to-speech. Voices vary by device; where speech isn't supported, the game is text only.
+- Turn either off in **Settings**, or use 🔊 in the in-game bar. Browsers only allow sound after the first click, so the opening itself is silent unless you click **Enter**.
+
 ## The Tower
 
 | Floor | Room | Zone (framework alignment) | Situation |
@@ -103,7 +110,9 @@ src/app/           React state, hash router, a11y helpers
   - persistence against hostile, corrupted or old saves
   - unlocks and achievements
   - that every floor can be finished, and scores 100% on the best path, with or without earlier flags
-- `npm run e2e`: **12 checks** in Chromium against the production build:
+- `npm run e2e`: **13 checks** in Chromium against the production build:
+  - the opening (logo fade and ring bloom, auto hand-over, replays on every visit)
+  - sounds generated and lines spoken (counted, not listened to)
   - home, navigation and active states
   - locked floors
   - the pass

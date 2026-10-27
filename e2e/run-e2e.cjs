@@ -52,8 +52,18 @@ async function shot(page, name) {
   await page.waitForTimeout(350);
   await page.screenshot({ path: path.join(SHOTS, `${name}.jpg`), type: 'jpeg', quality: 80 });
 }
+/** The opening plays on every page load; skip it like a player would. */
+async function enter(page) {
+  await page.locator('.splash-skip').click({ timeout: 4000 }).catch(() => {});
+  await page.waitForSelector('.splash', { state: 'detached', timeout: 6000 });
+}
+async function reload(page) {
+  await page.reload();
+  await enter(page);
+}
 async function go(page, route) {
   await page.goto(`${URL_BASE}#${route}`);
+  await enter(page);
   await page.waitForSelector('h1');
 }
 async function noOverflow(page, label) {
@@ -136,6 +146,23 @@ async function playFloor(page, { strong = true, thorough = true, shots = null } 
 }
 
 const checks = [
+  ['splash', 'Every visit opens with the logo fading in and the neon ring blooming, then hands over to Home', async (page) => {
+    await page.goto(URL_BASE);
+    await page.waitForSelector('.splash .splash-logo');
+    expect(await page.locator('.splash-ring').count() === 3, 'three rings');
+    const early = await page.$eval('.splash-ring:not(.outer):not(.inner)', (el) => getComputedStyle(el).transform);
+    await page.waitForTimeout(1400);
+    await shot(page, '00-splash-blooming');
+    await page.waitForTimeout(1800);
+    const late = await page.$eval('.splash-ring:not(.outer):not(.inner)', (el) => getComputedStyle(el).transform);
+    expect(early !== late, `the ring grows (${early} → ${late})`);
+    await shot(page, '00-splash-open');
+    await page.waitForSelector('.splash', { state: 'detached', timeout: 6000 });
+    expect((await page.textContent('h1')).includes('Four floors'), 'hands over to Home on its own');
+    await page.reload();
+    expect(await page.locator('.splash').count() === 1, 'plays again on the next visit');
+    await enter(page);
+  }],
   ['home', 'Home invites the player in, over the lobby art', async (page) => {
     await go(page, '/');
     expect((await page.textContent('h1')).includes('Four floors'), 'hero heading');
@@ -200,13 +227,15 @@ const checks = [
     await page.click('.hotspot[aria-label^="Talk to Kai"]');
     await page.waitForSelector('.dialogue-name:has-text("Kai")', { timeout: 8000 });
     await shot(page, '04-talk-to-kai');
+    expect(await page.evaluate(() => window.__tones) > 0, 'buttons and discoveries make sounds');
+    await page.waitForFunction(() => window.__spoken.some((t) => t.includes('Dana sent you')), null, { timeout: 4000 });
     await skipDialogue(page);
     await page.click('.play-panel button:has-text("Done")');
     await page.click('.chip:has-text("Dana")');
     await skipDialogue(page);
     await page.click('.play-panel button:has-text("Done")');
     // Refresh mid-floor: evidence and place survive.
-    await page.reload();
+    await reload(page);
     await page.waitForSelector('.explore-panel');
     expect((await page.textContent('.hud-count')).trim() === '2', 'notebook survived refresh');
     // Decide without having met Margit: the strongest read is still hidden.
@@ -231,7 +260,7 @@ const checks = [
     await shot(page, '08-lobby-report');
   }],
   ['replay', 'Replays keep the best medal and reveal outcomes still undiscovered', async (page) => {
-    await page.reload();
+    await reload(page);
     await go(page, '/debrief/front-gate');
     expect(await page.locator('.undiscovered').count() >= 1, 'undiscovered outcomes teased');
     await page.click('button:has-text("Play it differently")');
@@ -301,7 +330,7 @@ const checks = [
     await page.click('button:has-text("Reset all progress")');
     await page.click('dialog button:has-text("Yes, reset")');
     await page.waitForSelector('.home');
-    await page.reload();
+    await reload(page);
     await go(page, '/journey');
     expect(await page.locator('.floor.state-locked').count() === 4, 'reset locks everything');
   }],
@@ -356,6 +385,19 @@ const mobileChecks = [
 
 async function runSuite(browser, list, contextOpts, label) {
   const context = await browser.newContext(contextOpts);
+  await context.addInitScript(() => {
+    window.__tones = 0;
+    window.__spoken = [];
+    const AC = window.AudioContext;
+    if (AC) {
+      const orig = AC.prototype.createOscillator;
+      AC.prototype.createOscillator = function (...a) { window.__tones++; return orig.apply(this, a); };
+    }
+    if (window.speechSynthesis) {
+      const speak = window.speechSynthesis.speak.bind(window.speechSynthesis);
+      window.speechSynthesis.speak = (u) => { window.__spoken.push(u.text); try { speak(u); } catch { /* headless */ } };
+    }
+  });
   const page = await context.newPage();
   watch(page, label);
   for (const [id, title, fn] of list) {

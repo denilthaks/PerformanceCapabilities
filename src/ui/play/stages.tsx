@@ -19,6 +19,7 @@ import { Meters } from '../common';
 import { MedalIcon } from '../medals';
 import { Portrait } from '../sprites';
 import { Dialogue } from './Dialogue';
+import { speak, speakAll } from '../../app/voice';
 
 export interface PanelProps<S> {
   scenario: Scenario;
@@ -98,6 +99,14 @@ export function DecisionPanel({ scenario, stage, run, ctx, onContinue, continueL
   const chosen = chosenOption(scenario, run, stage.id);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { setPick(''); }, [stage.id]);
+  // The asker says their question aloud; afterwards, everyone reacts in turn.
+  useEffect(() => { if (!chosen) speak(stage.prompt, stage.asker); }, [stage.id, stage.prompt, stage.asker, chosen]);
+  useEffect(() => {
+    if (!chosen) return;
+    speakAll(chosen.outcome.reactions.filter((r) => conditionMet(r.when, run, ctx)).map((r) => ({ text: r.text, speaker: r.characterId })));
+    // Spoken once, when the outcome first appears.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chosen]);
   useEffect(() => {
     if (!chosen) return;
     // Keep the room (and everyone's reactions) in view while focus moves to the outcome.

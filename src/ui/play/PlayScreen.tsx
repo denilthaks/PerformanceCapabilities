@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useGame } from '../../app/game';
 import { navigate } from '../../app/router';
 import { announce, prefersReducedMotion } from '../../app/a11y';
+import { play } from '../../app/audio';
 import {
   advance, chosenOption, conditionMet, currentStage, exploreStages, inspect, previousStage, restoreRun, stageIndex,
   startRun, visibleHotspots,
@@ -101,6 +102,7 @@ export function PlayScreen({ id }: { id: string }) {
   const interact = (h: Hotspot) => {
     if (!run.inspected.includes(h.id)) {
       setRun(inspect(run, h.id));
+      play(h.secret ? 'secret' : 'discover');
       if (h.secret) announce('You found something hidden.');
     }
     setActive(h);
@@ -143,6 +145,14 @@ export function PlayScreen({ id }: { id: string }) {
         <div className="hud-actions">
           <button type="button" className={`btn btn-ghost btn-sm${notebook ? ' on' : ''}`} aria-expanded={notebook} aria-controls="field-notebook" onClick={() => setNotebook((n) => !n)}>
             📓 <span className="hud-count">{found.length}</span><span className="visually-hidden"> clues in your notebook</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            aria-pressed={!(progress.settings.sound || progress.settings.voice)}
+            onClick={() => { const on = !(progress.settings.sound || progress.settings.voice); game.updateSettings({ sound: on, voice: on }); }}
+          >
+            {progress.settings.sound || progress.settings.voice ? '🔊' : '🔇'}<span className="visually-hidden">Mute sound and voice</span>
           </button>
           <button type="button" className="btn btn-ghost btn-sm" disabled={index === 0} onClick={() => setRun(previousStage(scenario, run))}>
             <Icon name="back" size={16} />Back

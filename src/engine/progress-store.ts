@@ -20,7 +20,14 @@ export type Avatar = (typeof AVATARS)[number];
 export type Motion = 'system' | 'reduce' | 'full';
 export type TextSize = 'normal' | 'large';
 
-export interface Settings { motion: Motion; textSize: TextSize }
+export interface Settings {
+  motion: Motion;
+  textSize: TextSize;
+  /** Interface sound effects. */
+  sound: boolean;
+  /** Spoken dialogue (the browser's text-to-speech). */
+  voice: boolean;
+}
 
 export interface HistoryEntry {
   at: number;
@@ -74,7 +81,7 @@ export interface StorageLike {
 }
 
 export function defaultSettings(): Settings {
-  return { motion: 'system', textSize: 'normal' };
+  return { motion: 'system', textSize: 'normal', sound: true, voice: true };
 }
 
 export function defaultProgress(): Progress {
@@ -118,6 +125,8 @@ function sanitizeSettings(raw: unknown): Settings {
     const r = raw as Record<string, unknown>;
     if (['system', 'reduce', 'full'].includes(r.motion as string)) settings.motion = r.motion as Motion;
     if (['normal', 'large'].includes(r.textSize as string)) settings.textSize = r.textSize as TextSize;
+    if (typeof r.sound === 'boolean') settings.sound = r.sound;
+    if (typeof r.voice === 'boolean') settings.voice = r.voice;
   }
   return settings;
 }

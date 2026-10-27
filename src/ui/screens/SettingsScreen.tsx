@@ -6,6 +6,7 @@ import { navigate } from '../../app/router';
 import type { Motion, TextSize } from '../../engine/progress-store';
 import { Link } from '../common';
 import { PLAYER_LOOKS, PlayerPortrait } from '../sprites';
+import { voiceSupported } from '../../app/voice';
 
 function Choice<T extends string>({ legend, name, value, options, onChange, hint }: {
   legend: string; name: string; value: T; options: { value: T; label: string }[]; onChange(v: T): void; hint?: string;
@@ -60,6 +61,11 @@ export function SettingsScreen() {
         <Choice<Motion> legend="Motion" name="motion" value={s.motion} onChange={(v) => updateSettings({ motion: v })}
           options={[{ value: 'system', label: 'Match my device' }, { value: 'reduce', label: 'Reduce' }, { value: 'full', label: 'Full' }]}
           hint="Reduce turns off walking animation, typed-out dialogue and room effects. Your character moves instantly." />
+        <Choice<'on' | 'off'> legend="Sound effects" name="sound" value={s.sound ? 'on' : 'off'} onChange={(v) => updateSettings({ sound: v === 'on' })}
+          options={[{ value: 'on', label: 'On' }, { value: 'off', label: 'Off' }]} />
+        <Choice<'on' | 'off'> legend="Voice-over" name="voice" value={s.voice ? 'on' : 'off'} onChange={(v) => updateSettings({ voice: v === 'on' })}
+          options={[{ value: 'on', label: 'On' }, { value: 'off', label: 'Off' }]}
+          hint={voiceSupported() ? 'Characters speak their lines using your device\'s built-in voices, so they sound different on different devices.' : 'Your browser doesn\'t support speech, so dialogue is text only.'} />
         <Choice<TextSize> legend="Text size" name="text" value={s.textSize} onChange={(v) => updateSettings({ textSize: v })}
           options={[{ value: 'normal', label: 'Normal' }, { value: 'large', label: 'Large' }]} />
       </section>
