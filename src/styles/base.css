@@ -1,0 +1,68 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+html { color-scheme: dark; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root { display: flex; flex-direction: column; min-height: 100vh; }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  line-height: 1.2;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; }
+h2 { font-size: clamp(1.25rem, 2.4vw, 1.55rem); font-weight: 600; }
+h3 { font-size: 1.08rem; font-weight: 600; }
+h1:focus, h2:focus { outline: none; }
+p { margin: 0 0 0.9em; }
+small { font-size: 0.82em; }
+
+a { color: var(--text); }
+a:hover { color: var(--crimson); }
+
+img, svg { max-width: 100%; }
+
+:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 6px; }
+/* Headings and panels receive focus programmatically for screen readers; no ring needed. */
+[tabindex='-1']:focus, [tabindex='-1']:focus-visible { box-shadow: none; outline: none; }
+
+button, input, textarea { font: inherit; color: inherit; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: absolute; left: 12px; top: -60px; z-index: 100;
+  background: var(--crimson); color: #fff; padding: 10px 16px; border-radius: 8px; text-decoration: none;
+}
+.skip-link:focus { top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-motion='system'] *, html[data-motion='system'] *::before, html[data-motion='system'] *::after {
+    animation: none !important; transition: none !important; scroll-behavior: auto !important;
+  }
+}
+html[data-motion='reduce'] *, html[data-motion='reduce'] *::before, html[data-motion='reduce'] *::after {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
+
+@media (forced-colors: active) {
+  .btn, .option, .hotspot, .map-node { border: 2px solid ButtonText; }
+}

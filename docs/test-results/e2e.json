@@ -1,0 +1,76 @@
+{
+  "when": "2026-10-27T18:13:25.352Z",
+  "results": [
+    {
+      "id": "home",
+      "title": "Home loads with title, CTA and the 3D ambient world (or its fallback)",
+      "ok": true,
+      "ms": 3269
+    },
+    {
+      "id": "nav-links",
+      "title": "Every navigation link leads to a working screen with an active state",
+      "ok": true,
+      "ms": 2931
+    },
+    {
+      "id": "locked",
+      "title": "Zones are locked before a character exists, and play is refused",
+      "ok": true,
+      "ms": 3939
+    },
+    {
+      "id": "create",
+      "title": "Character creation validates and saves",
+      "ok": true,
+      "ms": 6780
+    },
+    {
+      "id": "zone1",
+      "title": "Zone 1: full playable scenario with consequences, feedback and debrief",
+      "ok": true,
+      "ms": 30641
+    },
+    {
+      "id": "persist",
+      "title": "Progress persists across refresh; Zone 2 unlocks; replay works and keeps best",
+      "ok": true,
+      "ms": 18933
+    },
+    {
+      "id": "zones234",
+      "title": "Zones 2–4 are playable, unlock in order, and carry earlier decisions forward",
+      "ok": true,
+      "ms": 104560
+    },
+    {
+      "id": "progress",
+      "title": "Progress page shows XP, achievements, journal and evidence",
+      "ok": true,
+      "ms": 2953
+    },
+    {
+      "id": "settings",
+      "title": "Settings: text size, 3D off fallback, and reset with confirmation",
+      "ok": true,
+      "ms": 3300
+    },
+    {
+      "id": "mobile",
+      "title": "Mobile (375×740): no horizontal overflow, working menu, playable scenario",
+      "ok": true,
+      "ms": 17614
+    },
+    {
+      "id": "no-webgl",
+      "title": "Without WebGL, the game falls back to a flat background and still works",
+      "ok": true,
+      "ms": 2575
+    },
+    {
+      "id": "console",
+      "title": "No console errors or uncaught exceptions",
+      "ok": true
+    }
+  ]
+}
