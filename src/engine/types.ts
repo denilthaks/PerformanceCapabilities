@@ -2,6 +2,8 @@
 // (src/content/scenarios) so new ones can be added without touching the engine.
 
 export type ZoneId = 'foundation' | 'shift' | 'horizon' | 'trial';
+/** The four floors of Halcyon Tower, each a pixel-art room in src/assets/rooms. */
+export type RoomId = 'lobby' | 'vault' | 'lounge' | 'executive';
 export type Mood = 'neutral' | 'relieved' | 'encouraged' | 'concerned' | 'frustrated' | 'withdrawn';
 export type Quality = 'strong' | 'mixed' | 'weak';
 
@@ -20,6 +22,9 @@ export interface Condition {
   notFlag?: string;
   /** A decision made earlier in this same run. */
   choice?: { decision: string; option: string | string[] };
+  /** A hotspot the player has (or hasn't) examined in this run. */
+  inspected?: string;
+  notInspected?: string;
 }
 
 export interface Line {
@@ -41,9 +46,11 @@ export interface Hotspot {
   label: string;
   kind: 'character' | 'evidence';
   characterId?: string;
-  /** Position on the scene, as a percentage of its width and height. */
+  /** Position in the room, in room pixels (the rooms are 480 × 300). */
   x: number;
   y: number;
+  /** Marker for objects: a document, a screen or a phone call. */
+  icon?: 'doc' | 'screen' | 'call';
   /** What the player learned, shown in the evidence record after inspection. */
   summary: string;
   lines?: Line[];
@@ -53,6 +60,11 @@ export interface Hotspot {
   when?: Condition;
   /** Plausible but misleading. Revealed in the debrief, never during play. */
   misleading?: boolean;
+  /**
+   * An optional discovery with no marker: never required, never counted as
+   * evidence, and recorded separately (the founder's memos, easter eggs).
+   */
+  secret?: boolean;
 }
 
 export type MeterId = 'output' | 'quality' | 'trust' | 'capability' | 'wellbeing' | 'cohesion';
@@ -82,8 +94,13 @@ export interface Option {
   quality: Quality;
   rubric: Partial<Record<ChoiceCriterion, 0 | 1 | 2>>;
   outcome: Outcome;
-  /** Why this choice played out as it did, linked to the framework. */
+  /** Why this choice played out as it did, in plain language (no framework jargon). */
   feedback: string;
+  /**
+   * The option only appears once the player has examined at least one of
+   * these hotspots. Exploring opens up better choices.
+   */
+  unlockedBy?: string[];
   principleIds: string[];
   flags?: string[];
 }
@@ -100,7 +117,8 @@ export interface NarrativeStage extends StageBase {
 
 export interface ExploreStage extends StageBase {
   kind: 'explore';
-  instructions: string;
+  /** One short, in-world objective line. */
+  goal: string;
   hotspots: Hotspot[];
   /** Hotspots that must be inspected before moving on. */
   required: string[];
@@ -108,6 +126,8 @@ export interface ExploreStage extends StageBase {
 
 export interface DecisionStage extends StageBase {
   kind: 'decision';
+  /** The character who puts the question to the player. */
+  asker: string;
   prompt: string;
   /** Which explore stages' hotspots count as evidence available for this decision. */
   evidenceFrom: string[];
@@ -147,10 +167,14 @@ export interface MeterDef {
 export interface Scenario {
   id: string;
   zone: ZoneId;
+  room: RoomId;
+  /** Floor label in the Tower, e.g. "Ground" or "40". */
+  floor: string;
   title: string;
-  tagline: string;
-  setting: string;
-  objectives: string[];
+  /** One line that makes the player curious. */
+  hook: string;
+  /** Where the player starts in the room (room pixels). */
+  start: { x: number; y: number };
   characters: string[];
   principleIds: string[];
   meters: MeterDef[];
@@ -165,7 +189,8 @@ export interface Character {
   role: string;
   goal: string;
   perspective: string;
-  look: { skin: string; hair: string; hairStyle: 'short' | 'long' | 'bun' | 'shaved' | 'curly' | 'fade'; accent: string; outfit: string };
+  /** Where this character is drawn: their head, in room pixels, used for portraits. */
+  sprite: { room: RoomId; x: number; y: number };
 }
 
 // ---- Run state ----

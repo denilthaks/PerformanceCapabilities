@@ -21,6 +21,9 @@
 
   --font-display: 'Sora', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-pixel: 'Pixelify Sans', 'Courier New', monospace;
+  --bronze: #b8743c;
+  --silver: #c9ccd6;
 
   --radius: 14px;
   --radius-sm: 9px;

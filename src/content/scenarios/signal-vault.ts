@@ -1,0 +1,338 @@
+// Floor 7, the Data Vault. Zone 2, The Shift (Level 2: Transformational).
+// Fictional. The player acts on an incomplete picture, sees what it costs,
+// then gets a second look and a second chance.
+
+import type { Scenario } from '../../engine/types';
+
+export const signalVault: Scenario = {
+  id: 'signal-vault',
+  zone: 'shift',
+  room: 'vault',
+  floor: '7',
+  title: 'The Red Line',
+  hook: 'Response times have climbed for three weeks. Everyone knows who to blame. Everyone might be wrong.',
+  start: { x: 300, y: 282 },
+  characters: ['imani', 'rafael', 'odette'],
+  principleIds: ['level-2', 'p1', 'g-test-assumptions', 'g-familiar-fix'],
+  meters: [
+    { id: 'output', label: 'Response speed', start: 4 },
+    { id: 'quality', label: 'Fixes that stick', start: 5 },
+    { id: 'trust', label: 'Team trust', start: 5 },
+    { id: 'wellbeing', label: 'Rafael', start: 4 },
+  ],
+  criteria: ['evidence', 'diagnosis', 'development', 'impact', 'reflection'],
+  estimatedMinutes: 10,
+  stages: [
+    {
+      kind: 'narrative',
+      id: 'brief',
+      title: 'Floor 7',
+      lines: [
+        { speaker: 'narrator', text: 'The elevator opens onto cold air and the hum of servers. On the holo screen, a red line climbs.' },
+        { speaker: 'narrator', text: 'Word travels fast in this building. Kai sent a message up: "Heard you\'re the one who listens."', when: { flag: 'front-gate:paired-practice' } },
+        { speaker: 'imani', text: 'Response times are up forty per cent in three weeks. It started the day Rafael joined.' },
+        { speaker: 'imani', text: 'I\'ve drafted a performance plan for him, and I want last year\'s speed script back. I need your sign-off today.' },
+      ],
+    },
+    {
+      kind: 'explore',
+      id: 'first-look',
+      title: 'The Vault',
+      goal: 'You have a few minutes before Imani wants an answer.',
+      required: ['imani', 'dashboard'],
+      hotspots: [
+        {
+          id: 'imani', label: 'Imani', kind: 'character', characterId: 'imani', x: 360, y: 174,
+          summary: 'Imani ties the rise to Rafael\'s arrival and wants the fix that worked last year.',
+          lines: [
+            { speaker: 'imani', text: 'Five years running this floor. When numbers move, it\'s one person or one process.' },
+            { speaker: 'player', text: 'What else changed three weeks ago?' },
+            { speaker: 'imani', text: 'Nothing that matters. Rafael started. That\'s the change.' },
+          ],
+        },
+        {
+          id: 'dashboard', label: 'Holo screen', kind: 'evidence', icon: 'screen', x: 240, y: 216, misleading: true,
+          summary: 'Team average is 41 minutes against a 25-minute target. Rafael averages 78, and the rise starts on his first day.',
+          doc: {
+            title: 'Response dashboard: last 30 days',
+            source: 'Holo screen',
+            body: ['Team average: 41 min (target 25)', 'Slowest analyst: R. Duarte, 78 min', 'Trend starts: 21 days ago (R. Duarte start date marked)', 'Breakdown by ticket type: not on this view'],
+          },
+        },
+        {
+          id: 'rafael', label: 'Rafael', kind: 'character', characterId: 'rafael', x: 240, y: 266,
+          summary: 'Rafael says his queue is full of the hardest cases, and that nobody here asks for help.',
+          lines: [
+            { speaker: 'rafael', text: 'I know what my number looks like.' },
+            { speaker: 'rafael', text: 'Most of what lands in my queue is the gnarly stuff: outages, corrupted data. I try to solve it myself.' },
+            { speaker: 'player', text: 'Why not escalate?' },
+            { speaker: 'rafael', text: 'Nobody does. I asked once and got a look. So I don\'t.' },
+          ],
+        },
+        {
+          id: 'odette', label: 'Odette', kind: 'character', characterId: 'odette', x: 120, y: 170,
+          summary: 'Odette thinks new people need to toughen up, and wants the old script back.',
+          lines: [
+            { speaker: 'odette', text: 'When I started, nobody held my hand. You figure it out or you don\'t.' },
+            { speaker: 'odette', text: 'The script worked last year. Bring it back, everyone speeds up, done.' },
+          ],
+        },
+        {
+          id: 'watcher', label: 'Someone in the dark', kind: 'character', characterId: 'watcher', x: 447, y: 228, secret: true,
+          summary: 'A figure at the end of the row hands you the founder\'s second memo.',
+          lines: [
+            { speaker: 'watcher', text: '...' },
+            { speaker: 'watcher', text: 'Every new lead comes down here and asks who\'s slow. Nobody asks what changed.' },
+            { speaker: 'narrator', text: 'They press a folded card into your hand. "Founder\'s memo, no. 2: We measured the people. We never measured the pipes."' },
+          ],
+        },
+      ],
+    },
+    {
+      kind: 'decision',
+      id: 'first-call',
+      title: 'First call',
+      asker: 'imani',
+      prompt: 'Well? I\'m breaching target every hour we stand here.',
+      evidenceFrom: ['first-look'],
+      options: [
+        {
+          id: 'plan',
+          label: '"Go ahead with the performance plan for Rafael."',
+          quality: 'weak',
+          rubric: { diagnosis: 0, impact: 0 },
+          outcome: {
+            headline: 'Decisive. Is it right?',
+            narrative: ['The plan is issued that afternoon. Imani looks relieved to have done something.'],
+            reactions: [
+              { characterId: 'imani', mood: 'relieved', text: 'Good. Now we\'ll see movement.' },
+              { characterId: 'rafael', mood: 'withdrawn', text: 'Understood.' },
+            ],
+            effects: { trust: -2, wellbeing: -2 },
+            later: [
+              'Rafael\'s numbers haven\'t moved. He\'s stopped asking questions entirely, and he\'s updating his CV.',
+              'Odette\'s average has started to slip too. Nobody can explain why.',
+            ],
+            laterEffects: { output: -1, wellbeing: -1 },
+          },
+          feedback: 'The dashboard showed that times rose when Rafael started. Treating that as the cause skipped the obvious question: what else changed? It\'s the most natural mistake on this floor, which is exactly why it\'s worth noticing.',
+          principleIds: ['g-test-assumptions', 'level-2'],
+          flags: ['first-plan'],
+        },
+        {
+          id: 'script',
+          label: '"Bring back last year\'s speed script for everyone."',
+          quality: 'weak',
+          rubric: { diagnosis: 0, impact: 1 },
+          outcome: {
+            headline: 'The familiar fix.',
+            narrative: ['The script is back by evening. The easy tickets close faster almost at once.'],
+            reactions: [
+              { characterId: 'odette', mood: 'relieved', text: 'Told you. Old tricks.' },
+              { characterId: 'rafael', mood: 'concerned', text: 'The script doesn\'t cover anything I get.' },
+            ],
+            effects: { output: 1, quality: -1 },
+            later: [
+              'Easy tickets are faster, but the average has barely moved. Hard tickets bounce back to customers two and three times.',
+              'Last year\'s fix solved last year\'s problem.',
+            ],
+            laterEffects: { output: -1, quality: -1 },
+          },
+          feedback: 'Repeating what worked before feels safe. But it assumed this year\'s problem had last year\'s cause, and nobody checked.',
+          principleIds: ['g-familiar-fix', 'level-2'],
+          flags: ['first-script'],
+        },
+        {
+          id: 'probe',
+          label: '"Give me a week. Pull the ticket-level data, and let\'s find out what changed three weeks ago."',
+          quality: 'strong',
+          rubric: { diagnosis: 2, impact: 2 },
+          unlockedBy: ['rafael'],
+          outcome: {
+            headline: 'A small step you can undo.',
+            narrative: ['You hold the big decision and ask for the raw ticket data.'],
+            reactions: [
+              { characterId: 'imani', mood: 'frustrated', text: 'A week? We\'re breaching every hour.' },
+              { characterId: 'rafael', mood: 'encouraged', text: 'Thanks for asking about the tickets, not just the clock.' },
+            ],
+            effects: { trust: 1 },
+            later: [
+              'The data arrives, and it doesn\'t fit Imani\'s story: on easy tickets, Rafael is as fast as anyone.',
+              'Two weeks of breaches cost you some goodwill with Imani. But now you have something real to work with.',
+            ],
+            laterEffects: { output: -1 },
+          },
+          feedback: 'With only part of the picture, you chose a step that tested the explanation before committing to it. It cost a week of pressure. It also kept you from building a fix on an assumption.',
+          principleIds: ['g-test-assumptions', 'level-2'],
+          flags: ['first-probe'],
+        },
+        {
+          id: 'wait',
+          label: '"Leave it. New starters always take time."',
+          quality: 'weak',
+          rubric: { diagnosis: 0, impact: 0 },
+          outcome: {
+            headline: 'Waiting is also a decision.',
+            narrative: ['Imani is not impressed.'],
+            reactions: [{ characterId: 'imani', mood: 'frustrated', text: 'Time is exactly what I don\'t have.' }],
+            effects: { trust: -1 },
+            later: ['Response times have climbed again. Rafael is exhausted.'],
+            laterEffects: { output: -1, wellbeing: -2 },
+          },
+          feedback: 'Waiting assumed the problem would fix itself, which is just another untested assumption. Unlike a test, it learned nothing while the cost grew.',
+          principleIds: ['g-test-assumptions'],
+          flags: ['first-wait'],
+        },
+      ],
+    },
+    {
+      kind: 'aftermath',
+      id: 'two-weeks',
+      title: 'Two weeks later',
+      decision: 'first-call',
+      intro: 'The elevator opens on Floor 7 again. The red line is still there, and so is everyone else.',
+    },
+    {
+      kind: 'explore',
+      id: 'second-look',
+      title: 'Second look',
+      goal: 'Something has turned up. The drone\'s logs and the archive drives are open now.',
+      required: ['routing-log', 'ticket-sample'],
+      hotspots: [
+        {
+          id: 'routing-log', label: 'Routing drone', kind: 'evidence', icon: 'screen', x: 308, y: 130, revealAfter: 'first-call',
+          summary: 'Three weeks ago, a new rule began sending the hardest tickets to the newest analyst, "for development". Imani approved it.',
+          doc: {
+            title: 'Routing bot: change history',
+            source: 'Routing drone display',
+            body: ['21 days ago: NEW RULE "Tier-3 tickets → newest analyst (development exposure)"', 'Approved by: I. Okafor', 'Support or pairing attached to the rule: none'],
+          },
+        },
+        {
+          id: 'ticket-sample', label: 'Archive drives', kind: 'evidence', icon: 'doc', x: 120, y: 132, revealAfter: 'first-call',
+          summary: '64% of Rafael\'s tickets are the hardest tier, against a team average of 12%. On easy tickets he\'s at team speed. Nobody has escalated in weeks.',
+          doc: {
+            title: 'Ticket mix by analyst: last 21 days',
+            source: 'Open rack bay',
+            body: ['R. Duarte: hardest-tier share 64% · easy-ticket average 19 min (team 18)', 'Team average hardest-tier share: 12%', 'Hardest-tier tickets escalated for help: 0 of 211 (whole team)'],
+          },
+        },
+        {
+          id: 'imani-2', label: 'Imani', kind: 'character', characterId: 'imani', x: 360, y: 174, revealAfter: 'first-call',
+          summary: 'Imani set up the routing rule to stretch new people, and hadn\'t connected it to the numbers.',
+          lines: [
+            { speaker: 'imani', text: 'That routing rule was mine. I wanted new people stretched early. It\'s how I grew.', when: { inspected: 'routing-log' } },
+            { speaker: 'imani', text: 'You\'ve been looking at the logs. Go on, say it.', when: { notInspected: 'routing-log' } },
+            { speaker: 'imani', text: 'I was looking at who. Not at what changed.' },
+          ],
+        },
+        {
+          id: 'odette-2', label: 'Odette', kind: 'character', characterId: 'odette', x: 120, y: 170, revealAfter: 'first-call',
+          summary: 'Odette admits that asking for help is seen as weakness here, and that she ground through hard cases alone for years.',
+          lines: [
+            { speaker: 'odette', text: 'Asking for help down here is seen as weakness. Always has been.' },
+            { speaker: 'odette', text: 'I spent years grinding through the worst tickets alone. Maybe that\'s nothing to be proud of.' },
+          ],
+        },
+      ],
+    },
+    {
+      kind: 'decision',
+      id: 'revised',
+      title: 'Second chance',
+      asker: 'imani',
+      prompt: 'All right. You\'ve seen what I missed. What now?',
+      evidenceFrom: ['first-look', 'second-look'],
+      options: [
+        {
+          id: 'revert',
+          label: '"Switch the routing rule off and move on."',
+          quality: 'mixed',
+          rubric: { diagnosis: 1, development: 0, impact: 1 },
+          outcome: {
+            headline: 'Fast recovery. Lost intent.',
+            narrative: ['Times recover within days. The idea of stretching new people quietly disappears, and nobody talks about asking for help.'],
+            reactions: [
+              { characterId: 'imani', mood: 'relieved', text: 'Numbers are back. Let\'s not overthink it.' },
+              { characterId: 'rafael', mood: 'neutral', text: 'Easier, sure. Not sure I\'m learning anything now.' },
+            ],
+            effects: { output: 2, trust: 1 },
+          },
+          feedback: 'You found the cause and removed it, which is real progress. But the belief underneath, that people grow by struggling alone, is untouched. It will produce the same pattern somewhere else.',
+          principleIds: ['g-familiar-fix', 'level-2'],
+          flags: ['reverted-routing'],
+        },
+        {
+          id: 'redesign',
+          label: '"Keep the stretch, change the how: pair new analysts with a senior on their first hard tickets, make escalating normal, and review it with the team in two weeks."',
+          quality: 'strong',
+          rubric: { diagnosis: 2, development: 2, impact: 2 },
+          unlockedBy: ['odette-2', 'rafael'],
+          outcome: {
+            headline: 'The belief changes, not just the rule.',
+            narrative: [
+              'Imani announces it herself and names the routing rule as her mistake. Odette volunteers to pair with Rafael.',
+              'Escalations go from none to a dozen a week. Within three weeks, the red line drops under target.',
+            ],
+            reactions: [
+              { characterId: 'imani', mood: 'encouraged', text: 'I was right that people need stretching. Wrong that they need to be alone for it.' },
+              { characterId: 'odette', mood: 'encouraged', text: 'Turns out I quite like being asked.' },
+              { characterId: 'rafael', mood: 'encouraged', text: 'Still getting the hard ones. Now I\'m learning from them.' },
+            ],
+            effects: { output: 3, quality: 2, trust: 2, wellbeing: 3 },
+          },
+          feedback: 'This deals with the pattern, not just the symptom. It keeps the good intention (stretch), challenges the belief that made it harmful (struggle alone), changes a team habit (never escalate), and brings the team in to check that it worked.',
+          principleIds: ['level-2', 'g-test-assumptions', 'p1'],
+          flags: ['redesigned-routing'],
+        },
+        {
+          id: 'course',
+          label: '"Keep the rule, and send Rafael on an advanced troubleshooting course."',
+          quality: 'weak',
+          rubric: { diagnosis: 1, development: 1, impact: 0 },
+          outcome: {
+            headline: 'Certified. Still alone.',
+            narrative: ['Rafael comes back with a certificate and the same queue. Times improve a little, then stall.'],
+            reactions: [{ characterId: 'rafael', mood: 'frustrated', text: 'The course was good. I still can\'t ask anyone when I\'m stuck.' }],
+            effects: { wellbeing: -1 },
+          },
+          feedback: 'You saw that Rafael lacked experience with hard tickets. But a course answers that with more information and leaves the routing, and the no-help habit, exactly where they were.',
+          principleIds: ['g-familiar-fix', 'g-knowing-vs-doing'],
+          flags: ['course'],
+        },
+        {
+          id: 'shield',
+          label: '"Move Rafael to easy tickets only, until he\'s more experienced."',
+          quality: 'mixed',
+          rubric: { diagnosis: 1, development: 0, impact: 1 },
+          outcome: {
+            headline: 'Protected, and parked.',
+            narrative: ['Rafael\'s numbers improve. The hard tickets move to the next-newest analyst, whose numbers start to climb.'],
+            reactions: [
+              { characterId: 'rafael', mood: 'neutral', text: 'Calmer. Not sure how I\'ll ever learn, though.' },
+              { characterId: 'odette', mood: 'concerned', text: 'So now it\'s Hamid\'s turn to drown.' },
+            ],
+            effects: { output: 1, wellbeing: 1 },
+          },
+          feedback: 'It takes the pressure off Rafael, but the rule still routes the hardest work to whoever is newest. The problem moved to the next person, which tells you it was never about Rafael.',
+          principleIds: ['g-symptom-vs-cause', 'level-2'],
+          flags: ['shielded'],
+        },
+      ],
+    },
+    {
+      kind: 'reflection',
+      id: 'reflect',
+      title: 'Your notebook',
+      prompt: 'On the ride back up, you scribble a few lines. What\'s true?',
+      options: [
+        { id: 'dashboard-trust', text: 'The holo screen made the answer feel obvious.' },
+        { id: 'asked-changed', text: 'I asked what else had changed before I decided.' },
+        { id: 'first-wrong', text: 'My first call rested on an assumption that turned out wrong.' },
+        { id: 'revised-well', text: 'New evidence changed my mind, and I let it.' },
+        { id: 'norms', text: 'I noticed a team habit (never asking for help) was part of it.' },
+      ],
+      notePrompt: 'One belief you hold about how people get better at work. How could you test it?',
+    },
+  ],
+};

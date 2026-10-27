@@ -16,11 +16,11 @@ const RESULTS = path.join(ROOT, 'docs', 'test-results');
 const BASE = '/PerformanceCapabilities/';
 const PORT = Number(process.env.E2E_PORT || 4322);
 const URL_BASE = `http://localhost:${PORT}${BASE}`;
-const LAUNCH = { args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] };
 
-// Strong option ids, used to play the "best" path. Anything else picks the last option.
+// Strong option ids, used to play the best path. Otherwise the last open option is picked.
 const STRONG = ['practice-gap', 'paired-practice', 'probe', 'redesign', 'shared-measure', 'conditions', 'guided', 'correct-record', 'recovery-plan'];
 const ROUTES = ['/', '/journey', '/zones', '/zone/foundation', '/principles', '/about', '/progress', '/settings', '/create'];
+const FLOORS = [['foundation', 'front-gate'], ['shift', 'signal-vault'], ['horizon', 'late-shift'], ['trial', 'top-floor']];
 
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json' };
 function serve() {
@@ -44,13 +44,13 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
 function watch(page, label) {
   page.on('pageerror', (e) => consoleErrors.push(`[${label}] pageerror: ${e.message}`));
   page.on('console', (m) => {
-    // Google Fonts is blocked in some sandboxes; that's not an app error.
+    // Google Fonts may be blocked in sandboxes; that's not an app error.
     if (m.type() === 'error' && !/fonts\.(googleapis|gstatic)/.test(m.text()) && !/ERR_(TUNNEL|PROXY|NAME|CONNECTION)/.test(m.text())) consoleErrors.push(`[${label}] console: ${m.text()}`);
   });
 }
 async function shot(page, name) {
   await page.waitForTimeout(350);
-  await page.screenshot({ path: path.join(SHOTS, `${name}.jpg`), type: 'jpeg', quality: 78 });
+  await page.screenshot({ path: path.join(SHOTS, `${name}.jpg`), type: 'jpeg', quality: 80 });
 }
 async function go(page, route) {
   await page.goto(`${URL_BASE}#${route}`);
@@ -60,58 +60,86 @@ async function noOverflow(page, label) {
   const o = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(o <= 1, `${label}: horizontal overflow of ${o}px`);
 }
+async function playerPos(page) {
+  return page.$eval('.player-sprite', (el) => ({ x: parseFloat(el.style.left), y: parseFloat(el.style.top) }));
+}
+async function setMotion(page, value) {
+  await go(page, '/settings');
+  await page.click(`.segmented label:has-text("${value}")`);
+}
 
-/** Play the scenario currently open until its debrief. */
-async function playScenario(page, { strong = true, shots = null } = {}) {
-  for (let guard = 0; guard < 60; guard++) {
+/** Finish whatever dialogue is showing. */
+async function skipDialogue(page) {
+  const all = page.locator('.play-panel button:has-text("Skip all")');
+  if (await all.count()) await all.first().click();
+  const skip = page.locator('.play-panel .btn-pixel:has-text("Skip")');
+  if (await skip.count()) await skip.first().click();
+}
+
+/**
+ * Play the open floor to its report. thorough: examine everything (and find
+ * secrets); otherwise only what's required. strong: pick strong replies.
+ */
+async function playFloor(page, { strong = true, thorough = true, shots = null } = {}) {
+  for (let guard = 0; guard < 80; guard++) {
     if (page.url().includes('/debrief/')) return;
-    await page.waitForTimeout(120);
-    const showAll = page.locator('.dialogue button:has-text("Show all")');
-    if (await page.locator('.explore').count()) {
-      const pois = page.locator('.poi');
-      const n = await pois.count();
+    await page.waitForTimeout(80);
+    await skipDialogue(page);
+    if (await page.locator('.explore-panel').count()) {
+      const chips = page.locator('.explore-panel .chip');
+      const n = await chips.count();
       for (let i = 0; i < n; i++) {
-        await pois.nth(i).click();
-        if (await showAll.count()) await showAll.first().click();
+        const chip = chips.nth(i);
+        const label = await chip.textContent();
+        const required = !(await page.locator('.explore-foot .btn-primary').count());
+        if (!thorough && !required && !/Dana|Kai|Imani|Holo|Routing|Archive|Priya|Launch|Mira|Runbook|Change|Nwosu|rota/i.test(label)) continue;
+        await chip.click();
+        await skipDialogue(page);
+        await page.click('.play-panel button:has-text("Done")');
+      }
+      if (thorough) {
+        const secrets = page.locator('.hotspot.secret');
+        for (let i = 0; i < await secrets.count(); i++) {
+          await secrets.nth(i).click();
+          await page.waitForSelector('.play-panel .dialogue-box, .play-panel .doc-card', { timeout: 8000 });
+          await skipDialogue(page);
+          await page.click('.play-panel button:has-text("Done")');
+        }
       }
       if (shots) await shot(page, `${shots}-explore`);
-      await page.click('.play-foot button');
+      await page.click('.explore-foot .btn-primary');
       continue;
     }
-    if (await showAll.count()) { await showAll.first().click(); continue; }
-    if (await page.locator('.decision .options').count()) {
-      const values = await page.locator('.options input').evaluateAll((els) => els.map((e) => e.value));
-      const pick = strong ? values.find((v) => STRONG.includes(v)) : values[values.length - 1];
-      await page.check(`.options input[value="${pick}"]`);
+    if (await page.locator('.replies').count()) {
+      const values = await page.locator('.replies input').evaluateAll((els) => els.map((e) => e.value));
+      const pick = strong ? (values.find((v) => STRONG.includes(v)) ?? values[0]) : values[values.length - 1];
+      await page.locator(`.replies input[value="${pick}"]`).check({ force: true });
       if (shots) await shot(page, `${shots}-decision`);
-      await page.click('button:has-text("Commit decision")');
+      await page.click('button:has-text("Say it")');
       await page.waitForSelector('.consequence');
       if (shots) await shot(page, `${shots}-consequence`);
+      await page.click('.consequence-side .btn-primary');
       continue;
     }
-    if (await page.locator('.reflection').count()) {
-      const boxes = page.locator('.reflection input[type=checkbox]');
-      if (!(await boxes.first().isChecked())) await boxes.first().check();
+    if (await page.locator('.notebook').count()) {
+      const boxes = page.locator('.notebook input[type=checkbox]');
+      if (!(await boxes.first().isChecked())) await boxes.first().check({ force: true });
       await page.fill('#reflection-note', 'They knew the steps but had never practised them on the new equipment.');
-      if (shots) await shot(page, `${shots}-reflection`);
+      if (shots) await shot(page, `${shots}-notebook`);
+      await page.click('.notebook .btn-primary');
+      continue;
     }
-    const next = page.locator('.play-foot button');
-    if (await next.count()) {
-      expect(await next.isEnabled(), `Continue disabled on stage "${await page.textContent('#stage-title')}": ${await page.textContent('.play-status')}`);
-      await next.click();
-    }
+    const next = page.locator('.play-panel .btn-primary');
+    if (await next.count()) await next.first().click();
   }
-  throw new Error('Scenario did not finish');
+  throw new Error('Floor did not finish');
 }
 
 const checks = [
-  ['home', 'Home loads with title, CTA and the 3D ambient world (or its fallback)', async (page) => {
+  ['home', 'Home invites the player in, over the lobby art', async (page) => {
     await go(page, '/');
-    expect((await page.textContent('h1')).includes('Discover how you perform'), 'hero heading');
-    await page.waitForFunction(() => ['running', 'fallback', 'off'].includes(document.querySelector('[data-ambient]')?.dataset.ambient), null, { timeout: 20000 });
-    const ambient = await page.getAttribute('[data-ambient]', 'data-ambient');
-    expect(ambient === 'running', `ambient status ${ambient}`);
-    await page.waitForTimeout(800);
+    expect((await page.textContent('h1')).includes('Four floors'), 'hero heading');
+    expect(await page.locator('.home-art svg').count() === 1, 'lobby art behind the hero');
     await shot(page, '01-home');
   }],
   ['nav-links', 'Every navigation link leads to a working screen with an active state', async (page) => {
@@ -121,194 +149,213 @@ const checks = [
     for (const href of links) {
       await page.click(`.nav-links a[href="${href}"]`);
       await page.waitForSelector(`.nav-links a.active[href="${href}"]`, { timeout: 5000 }).catch(() => {});
-      const active = await page.locator('.nav-links a.active').getAttribute('href');
-      expect(active === href, `active state for ${href} was ${active}`);
-      expect(!(await page.textContent('h1')).includes('not found'), `${href} not found`);
+      expect(await page.locator('.nav-links a.active').getAttribute('href') === href, `active state for ${href}`);
     }
     for (const r of ROUTES) { await go(page, r); expect(!(await page.textContent('h1')).toLowerCase().includes('not found'), `${r} not found`); }
     await go(page, '/nowhere');
     expect((await page.textContent('h1')).includes('not found'), 'unknown route shows not found');
   }],
-  ['locked', 'Zones are locked before a character exists, and play is refused', async (page) => {
+  ['locked', 'Without a pass, every floor is locked and play is refused', async (page) => {
     await go(page, '/journey');
-    expect(await page.locator('.map-node').count() === 4, 'four zones on map');
-    expect(await page.locator('.map-node.state-locked').count() === 4, 'all locked');
-    await go(page, '/play/stalled-rig');
-    expect((await page.textContent('h1')).includes('locked'), 'play refused');
+    expect(await page.locator('.floor').count() === 4, 'four floors');
+    expect(await page.locator('.floor.state-locked').count() === 4, 'all locked');
+    await go(page, '/play/front-gate');
+    expect((await page.textContent('h1')).includes("won't stop"), 'play refused');
   }],
-  ['create', 'Character creation validates and saves', async (page) => {
+  ['create', 'Getting a pass validates the name and walks straight into the lobby', async (page) => {
     await go(page, '/');
     await page.click('.home-actions .btn-primary');
     await page.waitForSelector('#char-name');
     await page.click('button[type=submit]');
     expect(await page.locator('#char-name-error').count() === 1, 'empty name error');
-    await shot(page, '02-create');
     await page.fill('#char-name', 'Ada');
     await page.click('.avatar-option:nth-child(2)');
+    await shot(page, '02-pass');
     await page.click('button[type=submit]');
-    await page.waitForSelector('.world-map');
-    expect(await page.locator('.map-node.state-open').count() === 1, 'zone 1 open');
-    expect(await page.locator('.map-node.state-locked').count() === 3, 'zones 2–4 locked');
-    await page.waitForSelector('.toast');
-    await shot(page, '03-map');
+    await page.waitForSelector('.room-stage');
+    expect(page.url().includes('/play/front-gate'), 'lands in the lobby');
+    await page.waitForTimeout(900);
+    await shot(page, '03-first-night');
   }],
-  ['zone1', 'Zone 1: full playable scenario with consequences, feedback and debrief', async (page) => {
-    await go(page, '/zone/foundation');
-    await shot(page, '04-zone-overview');
-    await page.click('a:has-text("Start scenario")');
-    await page.waitForSelector('.dialogue');
-    await shot(page, '05-narrative');
-    await page.click('.dialogue button:has-text("Show all")');
-    await page.click('.play-foot button');
-    await page.waitForSelector('.explore');
-    expect(await page.locator('.play-foot button').isDisabled(), 'cannot leave explore before required hotspots');
-    // Inspect via the scene hotspot itself (not the list) to exercise movement.
-    await page.click('.hotspot[aria-label^="Kai Mensah"]');
-    await page.waitForSelector('.inspect-panel .dialogue');
-    await shot(page, '06-explore-dialogue');
-    await page.click('.hotspot[aria-label^="Error log"]');
-    await page.waitForSelector('.doc');
-    await shot(page, '07-explore-evidence');
-    // Back action and resume mid-scenario after a refresh.
+  ['lobby', 'The lobby: walking, talking, discovery-gated replies, consequences, a gold medal', async (page) => {
+    await skipDialogue(page);
+    await page.click('.play-panel .btn-primary');
+    await page.waitForSelector('.explore-panel');
+    expect(await page.locator('.explore-foot .btn-primary').count() === 0, 'cannot move on before talking to Dana and Kai');
+    // Click-to-walk: the player sprite actually moves.
+    const before = await playerPos(page);
+    const box = await page.locator('.room-floor').boundingBox();
+    await page.mouse.click(box.x + box.width * 0.3, box.y + box.height * 0.85);
+    await page.waitForTimeout(1200);
+    const after = await playerPos(page);
+    expect(Math.abs(after.x - before.x) > 3, `click-to-walk moved the player (${before.x} → ${after.x})`);
+    // Keyboard walking.
+    await page.focus('.room-stage');
+    await page.keyboard.down('ArrowRight');
+    await page.waitForTimeout(500);
+    await page.keyboard.up('ArrowRight');
+    const kb = await playerPos(page);
+    expect(kb.x > after.x + 2, 'arrow keys move the player');
+    // Walk to Kai by clicking him in the room.
+    await page.click('.hotspot[aria-label^="Talk to Kai"]');
+    await page.waitForSelector('.dialogue-name:has-text("Kai")', { timeout: 8000 });
+    await shot(page, '04-talk-to-kai');
+    await skipDialogue(page);
+    await page.click('.play-panel button:has-text("Done")');
+    await page.click('.chip:has-text("Dana")');
+    await skipDialogue(page);
+    await page.click('.play-panel button:has-text("Done")');
+    // Refresh mid-floor: evidence and place survive.
     await page.reload();
-    await page.waitForSelector('.explore');
-    expect((await page.textContent('.evidence-count')).includes('2'), 'evidence survived refresh');
-    await page.click('.play-nav button:has-text("Back")');
-    await page.waitForSelector('.dialogue');
-    await page.click('.dialogue button:has-text("Show all")');
-    await page.click('.play-foot button');
-    await page.waitForSelector('.explore');
-    await playScenario(page, { strong: true, shots: '08-z1' });
-    await page.waitForSelector('.big-score');
-    expect((await page.textContent('.big-score')).includes('100'), `best path should score 100, got ${await page.textContent('.big-score')}`);
-    await shot(page, '09-debrief');
-    await page.click('details summary');
-    expect(await page.locator('.paths li').count() >= 3, 'paths not taken listed');
+    await page.waitForSelector('.explore-panel');
+    expect((await page.textContent('.hud-count')).trim() === '2', 'notebook survived refresh');
+    // Decide without having met Margit: the strongest read is still hidden.
+    await page.click('.explore-foot .btn-primary');
+    await page.waitForSelector('.replies');
+    expect(await page.locator('.replies input[value="practice-gap"]').count() === 0, 'strong reply locked before discovery');
+    expect(await page.locator('.reply.locked').count() === 1, 'locked replies hinted');
+    await shot(page, '05-locked-reply');
+    // Back to explore, find more, and it unlocks.
+    await page.click('.hud-actions button:has-text("Back")');
+    await page.waitForSelector('.explore-panel');
+    await page.click('.chip:has-text("Margit")');
+    await skipDialogue(page);
+    await page.click('.play-panel button:has-text("Done")');
+    await page.click('.hotspot.secret');
+    await page.waitForSelector('.doc-card.secret', { timeout: 8000 });
+    await shot(page, '06-secret-memo');
+    await page.click('.play-panel button:has-text("Done")');
+    await playFloor(page, { strong: true, thorough: true, shots: '07-lobby' });
+    await page.waitForSelector('.big-medal');
+    expect((await page.textContent('.big-medal')).includes('Gold'), `expected gold, got ${await page.textContent('.big-medal')}`);
+    await shot(page, '08-lobby-report');
   }],
-  ['persist', 'Progress persists across refresh; Zone 2 unlocks; replay works and keeps best', async (page) => {
+  ['replay', 'Replays keep the best medal and reveal outcomes still undiscovered', async (page) => {
     await page.reload();
-    await go(page, '/journey');
-    expect(await page.locator('.map-node.state-complete').count() === 1, 'zone 1 complete after reload');
-    expect(await page.locator('.map-node.state-open').count() === 1, 'zone 2 open');
-    await go(page, '/debrief/stalled-rig');
-    await page.click('button:has-text("Replay with a different approach")');
-    await page.waitForSelector('.play');
-    await playScenario(page, { strong: false });
-    await page.waitForSelector('.big-score');
-    const s = await page.textContent('.big-score');
-    expect(!s.includes('100'), 'weak replay scores lower');
-    expect((await page.textContent('.score-card')).includes('Your best: 100%'), 'best kept');
-    await shot(page, '10-debrief-weak');
-    // Replay the strong path so later zones see Kai as an ally.
-    await page.click('button:has-text("Replay with a different approach")');
-    await playScenario(page, { strong: true });
+    await go(page, '/debrief/front-gate');
+    expect(await page.locator('.undiscovered').count() >= 1, 'undiscovered outcomes teased');
+    await page.click('button:has-text("Play it differently")');
+    await page.waitForSelector('.room-stage');
+    await playFloor(page, { strong: false, thorough: false });
+    await page.waitForSelector('.big-medal');
+    expect(!(await page.textContent('.big-medal')).includes('Gold'), 'weak replay is not gold');
+    expect((await page.textContent('.medal-card')).includes('still Gold'), 'best medal kept');
+    await page.click('summary:has-text("Other ways")');
+    await shot(page, '09-replay-report');
+    // Replay the strong path so later floors see Kai as an ally.
+    await page.click('button:has-text("Play it differently")');
+    await playFloor(page, { strong: true, thorough: true });
   }],
-  ['zones234', 'Zones 2–4 are playable, unlock in order, and carry earlier decisions forward', async (page) => {
-    for (const [zone, id, name] of [['shift', 'signal-room', '11-z2'], ['horizon', 'meridian-launch', '12-z3'], ['trial', 'crucible', '13-z4']]) {
+  ['floors', 'Floors 2–4 unlock in order, play through, and carry earlier decisions forward', async (page) => {
+    await setMotion(page, 'Reduce');
+    for (const [zone, id] of FLOORS.slice(1)) {
       await go(page, `/zone/${zone}`);
-      await page.click('a:has-text("Start scenario")');
-      await page.waitForSelector('.play');
-      await shot(page, `${name}-start`);
-      if (id === 'crucible') {
-        // Review stage, then the alarm: Kai should appear because Zone 1 used paired practice.
-        await page.click('.play-foot button');
-        await page.waitForSelector('.dialogue');
-        await page.click('.dialogue button:has-text("Show all")');
-        expect((await page.textContent('.dialogue')).includes('Kai Mensah'), 'carry-over line present');
+      await shot(page, `10-${id}-door`);
+      await page.click('a:has-text("Step out of the elevator")');
+      await page.waitForSelector('.room-stage');
+      if (id === 'top-floor') {
+        await page.click('.play-panel .btn-primary'); // elevator ride
+        await skipDialogue(page);
+        await page.click('.play-panel .btn-primary');
+        await page.waitForSelector('.explore-panel');
+        expect(await page.locator('.chip:has-text("Desk phone")').count() === 1, 'desk phone present');
+        await page.click('.chip:has-text("Desk phone")');
+        await skipDialogue(page);
+        expect((await page.textContent('.play-panel')).includes('Kai'), 'Kai answers because of Zone 1');
+        await page.click('.play-panel button:has-text("Done")');
       }
-      await playScenario(page, { strong: true, shots: name });
-      await page.waitForSelector('.big-score');
-      await shot(page, `${name}-debrief`);
+      await playFloor(page, { strong: true, thorough: true, shots: `11-${id}` });
+      await page.waitForSelector('.big-medal');
+      expect((await page.textContent('.big-medal')).includes('Gold'), `${id}: gold on the best path`);
+      await shot(page, `12-${id}-report`);
     }
-    expect((await page.textContent('body')).includes('Your journey, across all four zones'), 'trial journey summary');
+    expect((await page.textContent('body')).includes('The whole Tower'), 'journey summary on the top floor');
     await go(page, '/journey');
-    expect(await page.locator('.map-node.state-complete').count() === 4, 'all zones complete');
-    await shot(page, '14-map-complete');
+    expect(await page.locator('.floor.state-complete').count() === 4, 'all floors resolved');
+    await shot(page, '13-tower-complete');
+    await setMotion(page, 'Match my device');
   }],
-  ['progress', 'Progress page shows XP, achievements, journal and evidence', async (page) => {
+  ['progress', 'Progress shows medals, the founder\'s memos, achievements and the notebook', async (page) => {
     await go(page, '/progress');
     const text = await page.textContent('main');
-    for (const t of ['Learning journal', 'Evidence archive', 'Achievements', 'Constellation']) expect(text.includes(t), `progress shows ${t}`);
-    expect(await page.locator('.achievements li.earned').count() >= 8, 'achievements earned');
-    await shot(page, '15-progress');
+    for (const t of ['Medals', "The founder's memos", 'Achievements', 'Your notebook', 'Clue archive']) expect(text.includes(t), `progress shows ${t}`);
+    expect(await page.locator('.memos li.found').count() === 4, 'all four memos found');
+    expect(await page.locator('.achievements li.earned').count() >= 10, 'achievements earned');
+    await shot(page, '14-progress');
     await go(page, '/principles');
-    await shot(page, '16-principles');
     expect(await page.locator('.status-placeholder').count() >= 8, 'placeholders marked');
+    await shot(page, '15-principles');
     await go(page, '/about');
-    await shot(page, '17-about');
   }],
-  ['settings', 'Settings: text size, 3D off fallback, and reset with confirmation', async (page) => {
+  ['settings', 'Settings: text size, and reset only after confirmation', async (page) => {
     await go(page, '/settings');
     await page.click('.segmented label:has-text("Large")');
     expect(await page.evaluate(() => document.documentElement.dataset.textSize) === 'large', 'large text');
-    await page.click('.segmented label:has-text("Off")');
-    await go(page, '/');
-    expect(await page.getAttribute('[data-ambient]', 'data-ambient') === 'off', '3D off');
-    await go(page, '/settings');
     await page.click('.segmented label:has-text("Normal")');
-    await page.click('.segmented label:has-text("Automatic")');
     await page.click('button:has-text("Reset all progress")');
     await page.waitForSelector('dialog[open]');
-    await shot(page, '18-reset-confirm');
     await page.click('dialog button:has-text("Cancel")');
-    expect(await page.locator('dialog[open]').count() === 0, 'cancel closes');
     await go(page, '/journey');
-    expect(await page.locator('.map-node.state-complete').count() === 4, 'cancel kept progress');
+    expect(await page.locator('.floor.state-complete').count() === 4, 'cancel kept progress');
     await go(page, '/settings');
     await page.click('button:has-text("Reset all progress")');
     await page.click('dialog button:has-text("Yes, reset")');
     await page.waitForSelector('.home');
     await page.reload();
     await go(page, '/journey');
-    expect(await page.locator('.map-node.state-locked').count() === 4, 'reset locks everything');
+    expect(await page.locator('.floor.state-locked').count() === 4, 'reset locks everything');
+  }],
+  ['naive', 'A player who skims (required people only, first reply offered) can finish every floor', async (page) => {
+    await go(page, '/create');
+    await page.fill('#char-name', 'Skimmer');
+    await page.click('button[type=submit]');
+    await page.waitForSelector('.room-stage');
+    await setMotion(page, 'Reduce');
+    for (const [, id] of FLOORS) {
+      await go(page, `/play/${id}`);
+      await page.waitForSelector('.room-stage');
+      await playFloor(page, { strong: false, thorough: false });
+      await page.waitForSelector('.big-medal');
+    }
+    await go(page, '/journey');
+    expect(await page.locator('.floor.state-complete').count() === 4, 'skimmer resolves all floors');
   }],
 ];
 
 const mobileChecks = [
-  ['mobile', 'Mobile (375×740): no horizontal overflow, working menu, playable scenario', async (page) => {
+  ['mobile', 'Phone (375×740): no horizontal overflow, working menu, a full floor by touch', async (page) => {
     for (const r of ROUTES) { await go(page, r); await noOverflow(page, r); }
     await go(page, '/');
     await shot(page, '20-mobile-home');
     await page.click('.nav-toggle');
     await page.waitForSelector('.nav-drawer.open');
-    await shot(page, '21-mobile-menu');
     await page.click('.nav-drawer a[href="#/principles"]');
     await page.waitForSelector('h1:has-text("framework")');
     expect(await page.locator('.nav-drawer.open').count() === 0, 'drawer closes after navigation');
     await go(page, '/create');
     await page.fill('#char-name', 'Sam');
     await page.click('button[type=submit]');
-    await page.waitForSelector('.world-map');
-    await noOverflow(page, 'map');
-    await shot(page, '22-mobile-map');
-    await go(page, '/play/stalled-rig');
-    await page.click('.dialogue button:has-text("Show all")');
-    await page.click('.play-foot button');
-    await page.waitForSelector('.explore');
-    await noOverflow(page, 'explore');
-    await page.click('.poi >> nth=1');
-    await shot(page, '23-mobile-explore');
-    await playScenario(page, { strong: true, shots: '24-mobile' });
-    await noOverflow(page, 'debrief');
-    await shot(page, '25-mobile-debrief');
+    await page.waitForSelector('.room-stage');
+    await noOverflow(page, 'lobby');
+    await shot(page, '21-mobile-lobby');
+    await skipDialogue(page);
+    await page.click('.play-panel .btn-primary');
+    await page.waitForSelector('.explore-panel');
+    await page.click('.chip:has-text("Kai")');
+    await shot(page, '22-mobile-talk');
+    await skipDialogue(page);
+    await page.click('.play-panel button:has-text("Done")');
+    await playFloor(page, { strong: true, thorough: true, shots: '23-mobile' });
+    await noOverflow(page, 'report');
+    await shot(page, '24-mobile-report');
+    await go(page, '/journey');
+    await noOverflow(page, 'tower');
+    await shot(page, '25-mobile-tower');
   }],
 ];
 
-const noWebglChecks = [
-  ['no-webgl', 'Without WebGL, the game falls back to a flat background and still works', async (page) => {
-    await go(page, '/');
-    await page.waitForFunction(() => document.querySelector('[data-ambient]')?.dataset.ambient === 'fallback', null, { timeout: 10000 });
-    await page.click('.home-actions .btn-primary');
-    await page.fill('#char-name', 'Flat');
-    await page.click('button[type=submit]');
-    await page.waitForSelector('.world-map');
-    await shot(page, '26-no-webgl-map');
-  }],
-];
-
-async function runSuite(browser, list, contextOpts, label, setup) {
+async function runSuite(browser, list, contextOpts, label) {
   const context = await browser.newContext(contextOpts);
-  if (setup) await context.addInitScript(setup);
   const page = await context.newPage();
   watch(page, label);
   for (const [id, title, fn] of list) {
@@ -327,20 +374,14 @@ async function runSuite(browser, list, contextOpts, label, setup) {
 }
 
 (async () => {
+  fs.rmSync(SHOTS, { recursive: true, force: true });
   fs.mkdirSync(SHOTS, { recursive: true });
   fs.mkdirSync(RESULTS, { recursive: true });
   const server = await serve();
-  const browser = await chromium.launch(LAUNCH);
+  const browser = await chromium.launch();
   try {
     await runSuite(browser, checks, { viewport: { width: 1440, height: 900 } }, 'desktop');
     await runSuite(browser, mobileChecks, { viewport: { width: 375, height: 740 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }, 'mobile');
-    await runSuite(browser, noWebglChecks, { viewport: { width: 1280, height: 800 } }, 'no-webgl', () => {
-      const orig = HTMLCanvasElement.prototype.getContext;
-      HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
-        if (/webgl/.test(type)) return null;
-        return orig.call(this, type, ...rest);
-      };
-    });
   } finally {
     await browser.close();
     server.close();

@@ -48,7 +48,8 @@ export function validateScenario(s: Scenario, refs: ContentRefs): string[] {
         st.hotspots.forEach((h) => {
           if (hotspotIds.has(h.id)) err(`duplicate hotspot id "${h.id}"`);
           hotspotIds.add(h.id);
-          if (h.x < 0 || h.x > 100 || h.y < 0 || h.y > 100) err(`${h.id}: position out of range`);
+          if (h.x < 0 || h.x > 480 || h.y < 0 || h.y > 300) err(`${h.id}: position outside the room`);
+          if (h.secret && st.required.includes(h.id)) err(`${h.id}: a secret can't be required`);
           if (h.kind === 'character' && (!h.characterId || !refs.characterIds.has(h.characterId))) err(`${h.id}: unknown character`);
           if (h.kind === 'character' && !h.lines?.length) err(`${h.id}: character hotspot without dialogue`);
           if (h.kind === 'evidence' && !h.doc) err(`${h.id}: evidence hotspot without a document`);
@@ -62,8 +63,11 @@ export function validateScenario(s: Scenario, refs: ContentRefs): string[] {
           else if (h.when) err(`${st.id}: required hotspot "${r}" is conditional, so a player could be blocked`);
         });
         break;
-      case 'decision':
+      case 'decision': {
+        if (!refs.characterIds.has(st.asker)) err(`${st.id}: unknown asker "${st.asker}"`);
         if (st.options.length < 2) err(`${st.id}: needs at least two options`);
+        if (!st.options.some((o) => !o.unlockedBy?.length)) err(`${st.id}: at least one option must always be available`);
+        const reachable = new Map(s.stages.filter((x) => x.kind === 'explore' && st.evidenceFrom.includes(x.id)).flatMap((x) => (x.kind === 'explore' ? x.hotspots : [])).map((h) => [h.id, h]));
         if (!st.options.some((o) => o.quality === 'strong')) err(`${st.id}: needs at least one strong option`);
         if (new Set(st.options.map((o) => o.id)).size !== st.options.length) err(`${st.id}: duplicate option ids`);
         st.evidenceFrom.forEach((e) => {
@@ -84,6 +88,11 @@ export function validateScenario(s: Scenario, refs: ContentRefs): string[] {
           }
           (o.flags ?? []).forEach((f) => { if (!/^[a-z0-9-]{1,64}$/.test(f)) err(`${where}: bad flag "${f}"`); });
           if (Object.keys(o.rubric).length === 0) err(`${where}: empty rubric`);
+          (o.unlockedBy ?? []).forEach((id) => {
+            const h = reachable.get(id);
+            if (!h) err(`${where}: unlockedBy "${id}" isn't a hotspot this decision can see`);
+            else if (h.secret) err(`${where}: a secret can't unlock an option`);
+          });
         });
         // Every option must be scored on the same criteria, or the max would be unfair.
         {
@@ -91,6 +100,7 @@ export function validateScenario(s: Scenario, refs: ContentRefs): string[] {
           if (new Set(keys).size > 1) err(`${st.id}: options are scored on different rubric criteria`);
         }
         break;
+      }
       case 'aftermath': {
         const p = position(st.decision);
         if (!decisionIds.has(st.decision) || p >= at) err(`${st.id}: must follow decision "${st.decision}"`);

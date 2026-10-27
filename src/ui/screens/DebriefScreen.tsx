@@ -1,44 +1,44 @@
-// Consequence and debrief: the transparent rubric, what it suggests, the
-// paths not taken, and replay. Describes decisions, never the person.
+// The floor report: the medal and why, what your choices did, the outcomes you
+// have and haven't seen yet, and (optionally) the framework behind it all.
+// Describes decisions, never the person.
 
 import { useGame } from '../../app/game';
 import { navigate } from '../../app/router';
-import { band, CRITERION_LABELS, CRITERION_QUESTIONS, decisionStages, exploreStages, XP_RULES, type Band } from '../../engine/scenario-engine';
+import {
+  band, CRITERION_LABELS, CRITERION_QUESTIONS, decisionStages, exploreStages, medalFor, XP_RULES, type Band,
+} from '../../engine/scenario-engine';
 import { record } from '../../engine/progress-store';
-import { zoneComplete, zoneUnlocked } from '../../engine/progression';
+import { zoneUnlocked } from '../../engine/progression';
 import type { CriterionId, Result } from '../../engine/types';
 import { SCENARIO_MAP, SCENARIOS } from '../../content/scenarios';
 import { ZONES, zoneForScenario } from '../../content/zones';
-import { Constellation, Icon, Link, ReferenceCard, ScoreBar } from '../common';
+import { Icon, Link, Meters, ReferenceCard, ScoreBar } from '../common';
+import { MedalCriteria, MedalIcon, MEDAL_NAMES } from '../medals';
 
 const BAND_TEXT: Record<Band, string> = { strong: 'Strong', developing: 'Developing', early: 'Early' };
 
 const SUGGESTION: Record<CriterionId, Record<Band, string>> = {
   evidence: {
-    strong: 'You examined most of the available evidence before committing.',
-    developing: 'You looked at some of the evidence first. The sources you skipped would have changed the picture.',
-    early: 'You decided with little of the available evidence. Try investigating more widely before you commit.',
+    strong: 'You looked at almost everything before committing.',
+    developing: 'You looked at some of it first. What you skipped would have changed the picture.',
+    early: 'You decided on very little. Next time, look wider before you commit.',
   },
   diagnosis: {
-    strong: 'Your decisions targeted the underlying cause rather than the visible symptom.',
-    developing: 'You were partly right about the cause. Look for the explanation that fits all of the evidence, not just some of it.',
-    early: 'Your decisions responded to the symptom. Ask "what else would explain this?" before acting.',
+    strong: 'You went after the real cause, not the visible symptom.',
+    developing: 'You were partly right about the cause. Look for the explanation that fits everything you found.',
+    early: 'You responded to the symptom. Try asking "what else would explain this?"',
   },
   development: {
-    strong: 'Your responses built capability rather than only removing the problem.',
-    developing: 'Some of your responses fixed the immediate problem without building lasting capability.',
-    early: 'Your responses removed or punished the problem rather than developing the people involved.',
+    strong: 'You built people\'s ability instead of just removing the problem.',
+    developing: 'Some of your choices fixed today without building anything for tomorrow.',
+    early: 'Your choices removed or punished the problem rather than helping anyone grow.',
   },
   impact: {
-    strong: 'You accounted for the other people and the wider system your decisions touched.',
-    developing: 'You considered some of the wider effects. Others surfaced later.',
-    early: 'The costs of your decisions landed on people or parts of the system you hadn\'t considered.',
+    strong: 'You accounted for everyone your decisions landed on.',
+    developing: 'You saw some of the knock-on effects. Others surfaced later.',
+    early: 'The cost of your decisions landed on people you hadn\'t considered.',
   },
-  reflection: {
-    strong: 'You took time to reflect on your own approach.',
-    developing: 'You started a reflection.',
-    early: 'No reflection was recorded.',
-  },
+  reflection: { strong: 'You stopped to reflect.', developing: 'You started a reflection.', early: 'No reflection recorded.' },
 };
 
 function JourneySummary() {
@@ -50,35 +50,34 @@ function JourneySummary() {
     return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
   };
   const ranked = criteria.map((c) => ({ c, v: avg(c) })).sort((a, b) => b.v - a.v);
+  const top = ranked[0];
+  const low = ranked[ranked.length - 1];
   return (
     <section className="glass panel-pad">
-      <h2>Your journey, across all four zones</h2>
-      <p className="muted">Average of your most recent run in each scenario. Patterns across scenarios say more than any single score.</p>
-      <table className="rubric-table">
-        <thead><tr><th scope="col">Criterion</th>{results.map((r) => <th key={r.s.id} scope="col">{r.s.title}</th>)}<th scope="col">Average</th></tr></thead>
-        <tbody>
-          {criteria.map((c) => (
-            <tr key={c}>
-              <th scope="row">{CRITERION_LABELS[c]}</th>
-              {results.map((r) => {
-                const v = r.last.criteria.find((x) => x.id === c)?.score;
-                return <td key={r.s.id}>{v === undefined ? '–' : `${Math.round(v * 100)}%`}</td>;
-              })}
-              <td><strong>{Math.round(avg(c) * 100)}%</strong></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h2>The whole Tower</h2>
+      <p className="muted">Your most recent run on each floor. Patterns across floors say more than any one score.</p>
       <div className="two-col tight">
-        <div>
-          <h3>Most consistent strength</h3>
-          <p><strong>{CRITERION_LABELS[ranked[0].c]}.</strong> {SUGGESTION[ranked[0].c][band(ranked[0].v)]}</p>
-        </div>
-        <div>
-          <h3>Biggest opportunity</h3>
-          <p><strong>{CRITERION_LABELS[ranked[ranked.length - 1].c]}.</strong> {SUGGESTION[ranked[ranked.length - 1].c][band(ranked[ranked.length - 1].v)]}</p>
-        </div>
+        <div><h3>Your most consistent strength</h3><p><strong>{CRITERION_LABELS[top.c]}.</strong> {SUGGESTION[top.c][band(top.v)]}</p></div>
+        <div><h3>Where to grow next</h3><p><strong>{CRITERION_LABELS[low.c]}.</strong> {SUGGESTION[low.c][band(low.v)]}</p></div>
       </div>
+      <details>
+        <summary>Floor by floor</summary>
+        <table className="rubric-table">
+          <thead><tr><th scope="col">Criterion</th>{results.map((r) => <th key={r.s.id} scope="col">{zoneForScenario(r.s.id)?.place}</th>)}<th scope="col">Average</th></tr></thead>
+          <tbody>
+            {criteria.map((c) => (
+              <tr key={c}>
+                <th scope="row">{CRITERION_LABELS[c]}</th>
+                {results.map((r) => {
+                  const v = r.last.criteria.find((x) => x.id === c)?.score;
+                  return <td key={r.s.id}>{v === undefined ? '–' : `${Math.round(v * 100)}%`}</td>;
+                })}
+                <td><strong>{Math.round(avg(c) * 100)}%</strong></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
     </section>
   );
 }
@@ -92,58 +91,120 @@ export function DebriefScreen({ id }: { id: string }) {
   const result = rec.last;
 
   if (!scenario || !zone) {
-    return <section className="page narrow"><h1>Debrief not found</h1><Link to="/zones" className="btn btn-primary">All zones</Link></section>;
+    return <section className="page narrow"><h1>Report not found</h1><Link to="/journey" className="btn btn-primary">Back to the Tower</Link></section>;
   }
   if (!result) {
     return (
       <section className="page narrow">
-        <h1>No debrief yet for {scenario.title}</h1>
-        <p>Complete the scenario, including its reflection, to see your debrief.</p>
-        <Link to={`/play/${id}`} className="btn btn-primary">Play {scenario.title}</Link>
+        <h1>No report yet for {zone.place}</h1>
+        <p>See the floor through, including your notebook, and the report will be here.</p>
+        <Link to={`/play/${id}`} className="btn btn-primary">Go to {zone.place}</Link>
       </section>
     );
   }
 
+  const medal = medalFor(scenario, result);
   const next = ZONES.find((z) => z.number === zone.number + 1);
   const nextOpen = next && zoneUnlocked(progress, next, ZONES);
-  const strengths = result.criteria.filter((c) => c.id !== 'reflection' && band(c.score) === 'strong');
-  const opportunities = result.criteria.filter((c) => c.id !== 'reflection' && band(c.score) !== 'strong');
   const misleading = exploreStages(scenario).flatMap((s) => s.hotspots.filter((h) => h.misleading));
+  const secrets = exploreStages(scenario).flatMap((s) => s.hotspots.filter((h) => h.secret));
+  const secretsFound = secrets.filter((h) => progress.evidence.includes(`${id}/${h.id}`));
   const journal = [...progress.journal].reverse().find((j) => j.scenarioId === id);
-  const strongCount = decisionStages(scenario).filter((d) => d.options.find((o) => o.id === result.choices[d.id])?.quality === 'strong').length;
+  const refs = [...new Set(decisionStages(scenario).flatMap((d) => d.options.find((o) => o.id === result.choices[d.id])?.principleIds ?? []))];
+  const growth = result.criteria.filter((c) => c.id !== 'reflection' && band(c.score) !== 'strong');
 
   return (
     <section className="page debrief">
       <header className="page-head">
-        <Link to={`/zone/${zone.id}`} className="back-link"><Icon name="back" size={18} />{zone.name}</Link>
-        <p className="eyebrow">Debrief · Zone {zone.number}</p>
-        <h1>{scenario.title}</h1>
+        <Link to={`/zone/${zone.id}`} className="back-link"><Icon name="back" size={18} />{zone.place}</Link>
+        <p className="eyebrow pixel-font">Floor {zone.floor} · report</p>
+        <h1>{zone.place}: resolved</h1>
       </header>
 
       <div className="debrief-top">
-        <section className="glass panel-pad score-card">
-          <p className="eyebrow">Reasoning in this scenario</p>
-          <p className="big-score">{result.overall}<span>%</span></p>
-          <p className="muted">Your best: {rec.bestOverall}% · this run earned {result.xp} XP (best {rec.bestXp} XP)</p>
-          <p className="hint">This score rates your decisions in one fictional scenario against the rubric below. It is not a validated measure of you or your capability.</p>
+        <section className="glass panel-pad medal-card">
+          <MedalIcon medal={medal} size={88} label={medal ? `${MEDAL_NAMES[medal]} medal` : 'No medal'} />
+          <div>
+            <p className="big-medal">{medal ? MEDAL_NAMES[medal] : 'No medal'}</p>
+            <p className="muted">{rec.bestMedal && rec.bestMedal !== medal ? `Your best here is still ${MEDAL_NAMES[rec.bestMedal]}.` : 'This is your best on this floor.'}</p>
+            {growth.length > 0 && <p>{SUGGESTION[growth[0].id][band(growth[0].score)]}</p>}
+          </div>
         </section>
-        <section className="glass panel-pad rewards">
-          <h2>Rewards</h2>
-          <ul className="reward-list">
-            <li><Icon name="spark" /><span><strong>{strongCount}</strong> insight fragment{strongCount === 1 ? '' : 's'} from strong decisions</span></li>
-            <li><Icon name="doc" /><span><strong>{progress.evidence.filter((e) => e.startsWith(`${id}/`)).length}</strong> evidence records in your archive from this scenario</span></li>
-            <li><Icon name="star" /><span><strong>{result.xp}</strong> XP this run</span></li>
-            {zoneComplete(progress, zone) && <li><Constellation size={28} /><span>Capability emblem and artefact: <strong>{zone.artefact.name}</strong></span></li>}
-          </ul>
+        <section className="glass panel-pad">
+          <h2 className="pixel-font small-heading">What each medal takes</h2>
+          <MedalCriteria scenario={scenario} result={result} />
         </section>
       </div>
 
       <section className="glass panel-pad">
-        <h2>How this was scored</h2>
+        <h2>How it played out</h2>
+        <div className="two-col tight">
+          <div>
+            {decisionStages(scenario).map((d) => {
+              const chosen = d.options.find((o) => o.id === result.choices[d.id]);
+              const seen = d.options.filter((o) => o.id !== chosen?.id && progress.outcomes.includes(`${id}/${d.id}/${o.id}`));
+              const unseen = d.options.length - 1 - seen.length;
+              return (
+                <article key={d.id} className="decision-recap">
+                  <h3>{d.title}</h3>
+                  {chosen && (
+                    <>
+                      <p><span className={`q q-${chosen.quality}`}>{chosen.quality}</span> <strong>{chosen.outcome.headline}</strong></p>
+                      <p className="muted">{chosen.feedback}</p>
+                    </>
+                  )}
+                  {seen.length > 0 && (
+                    <details>
+                      <summary>Other ways you've seen this go ({seen.length})</summary>
+                      <ul className="paths">
+                        {seen.map((o) => <li key={o.id}><span className={`q q-${o.quality}`}>{o.quality}</span> <strong>{o.outcome.headline}</strong> <span className="muted">{o.feedback}</span></li>)}
+                      </ul>
+                    </details>
+                  )}
+                  {unseen > 0 && <p className="undiscovered">{unseen === 1 ? 'One other outcome' : `${unseen} other outcomes`} you haven't seen yet.</p>}
+                </article>
+              );
+            })}
+          </div>
+          <div>
+            <h3>Where things ended</h3>
+            <Meters defs={scenario.meters} values={result.meters} />
+            <p className="hint">The story's situation at the end. Simulated; it says nothing about you.</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="two-col">
+        {misleading.length > 0 && (
+          <section className="glass panel-pad">
+            <h2>The clue that pulls you the wrong way</h2>
+            <ul className="checklist">{misleading.map((h) => <li key={h.id}><strong>{h.label}:</strong> {h.summary}</li>)}</ul>
+          </section>
+        )}
+        <section className="glass panel-pad">
+          <h2>Hidden on this floor</h2>
+          <p className="muted">{secretsFound.length} of {secrets.length} found.</p>
+          <ul className="checklist">{secretsFound.map((h) => <li key={h.id}>{h.summary}</li>)}</ul>
+          {secretsFound.length < secrets.length && <p className="hint">They have no markers. Look at things nobody asked you to look at.</p>}
+        </section>
+      </div>
+
+      {journal && (
+        <section className="glass panel-pad notebook-entry">
+          <h2>Your notebook</h2>
+          <ul className="checklist">{journal.selected.map((s) => <li key={s}>{s}</li>)}</ul>
+          {journal.note && <blockquote className="journal-note">{journal.note}</blockquote>}
+        </section>
+      )}
+
+      {zone.id === 'trial' && <JourneySummary />}
+
+      <details className="glass panel-pad deep">
+        <summary>How this floor was judged</summary>
         <p className="muted">
-          Each criterion is scored from 0–100%. Evidence is the share of available sources you examined before each decision.
-          Diagnosis, development and impact come from the options you chose (0–2 points each, set by the scenario author).
-          Reflection counts completion only. The overall score is the average.
+          Each criterion is 0–100%. Evidence is the share of sources you examined before each decision (hidden things don't count).
+          Diagnosis, development and impact come from the options you chose, 0–2 points each, set by the scenario's author. Reflection
+          counts completion only; what you write is never scored. The overall reasoning score, {result.overall}%, is the average.
         </p>
         <table className="rubric-table">
           <thead><tr><th scope="col">Criterion</th><th scope="col">Question</th><th scope="col">Score</th><th scope="col">Detail</th></tr></thead>
@@ -158,85 +219,32 @@ export function DebriefScreen({ id }: { id: string }) {
             ))}
           </tbody>
         </table>
-        <p className="hint">XP: {XP_RULES.completion} for completing, {XP_RULES.perEvidence} per evidence record (up to {XP_RULES.evidenceCap}), {XP_RULES.reflection} for reflecting, and up to {XP_RULES.reasoning} scaled by the score. Replays keep your best.</p>
-      </section>
-
-      <div className="two-col">
-        <section className="glass panel-pad">
-          <h2>What held up</h2>
-          {strengths.length ? <ul className="checklist">{strengths.map((c) => <li key={c.id}><strong>{CRITERION_LABELS[c.id]}:</strong> {SUGGESTION[c.id].strong}</li>)}</ul> : <p className="muted">No criterion reached "strong" this time. That's useful information. Replay and try a different approach.</p>}
-        </section>
-        <section className="glass panel-pad">
-          <h2>Opportunities to develop</h2>
-          {opportunities.length ? <ul className="checklist opp">{opportunities.map((c) => <li key={c.id}><strong>{CRITERION_LABELS[c.id]}:</strong> {SUGGESTION[c.id][band(c.score)]}</li>)}</ul> : <p className="muted">Every criterion was strong. Try replaying with a different choice to see how the alternatives play out.</p>}
-        </section>
-      </div>
-
-      <section className="glass panel-pad">
-        <h2>What the game can't tell</h2>
-        <p className="muted">
-          The debrief sees only which options you picked and which sources you opened. It can't see your reasons, your context or how you'd act with real people.
-          Several options are defensible, and the scenario author's ratings are a judgement, not a fact. Treat this as a prompt for reflection, not a verdict.
+        <p className="hint">
+          XP this run: {result.xp} ({XP_RULES.completion} for finishing, {XP_RULES.perEvidence} per discovery up to {XP_RULES.evidenceCap},
+          {' '}{XP_RULES.reflection} for the notebook, up to {XP_RULES.reasoning} for reasoning). Replays keep your best. The score rates choices in one
+          fictional situation; it is not a validated measure of a person.
         </p>
-      </section>
+      </details>
 
-      <section className="glass panel-pad">
-        <h2>Your decisions, and the paths not taken</h2>
-        {decisionStages(scenario).map((d) => {
-          const chosen = d.options.find((o) => o.id === result.choices[d.id]);
-          return (
-            <article key={d.id} className="decision-recap">
-              <h3>{d.title}</h3>
-              {chosen && (
-                <p><span className={`q q-${chosen.quality}`}>{chosen.quality}</span> <strong>{chosen.label}</strong>, which led to: {chosen.outcome.headline}</p>
-              )}
-              {chosen && <p className="muted">{chosen.feedback}</p>}
-              <details>
-                <summary>See the other options</summary>
-                <ul className="paths">
-                  {d.options.filter((o) => o.id !== chosen?.id).map((o) => (
-                    <li key={o.id}><span className={`q q-${o.quality}`}>{o.quality}</span> <strong>{o.label}</strong> → {o.outcome.headline} <span className="muted">{o.feedback}</span></li>
-                  ))}
-                </ul>
-              </details>
-            </article>
-          );
-        })}
-      </section>
-
-      {misleading.length > 0 && (
-        <section className="glass panel-pad">
-          <h2>Clues that could mislead</h2>
-          <p className="muted">These sources were accurate, but they pointed towards a tempting explanation.</p>
-          <ul className="checklist">{misleading.map((h) => <li key={h.id}><strong>{h.label}:</strong> {h.summary}</li>)}</ul>
-        </section>
-      )}
-
-      <section className="glass panel-pad">
-        <h2>Framework links</h2>
-        <div className="ref-grid">
-          {[...new Set(decisionStages(scenario).flatMap((d) => d.options.find((o) => o.id === result.choices[d.id])?.principleIds ?? []))].map((p) => <ReferenceCard key={p} id={p} />)}
-        </div>
-      </section>
-
-      {journal && (
-        <section className="glass panel-pad">
-          <h2>Your reflection</h2>
-          <ul className="checklist">{journal.selected.map((s) => <li key={s}>{s}</li>)}</ul>
-          {journal.note && <blockquote className="journal-note">{journal.note}</blockquote>}
-          <Link to="/progress" className="text-link">Open your learning journal</Link>
-        </section>
-      )}
-
-      {zone.id === 'trial' && <JourneySummary />}
+      <details className="glass panel-pad deep">
+        <summary>Field notes: the ideas behind this floor</summary>
+        <p className="muted">
+          {zone.publishedLevel
+            ? `This floor is built around ${zone.alignment} of Ben Benson's Performance Capability framework.`
+            : 'This floor is a game capstone that draws on all three published levels.'}{' '}
+          Each card says whether it's published material, a summary, a placeholder awaiting Ben's review, or written for the game.
+        </p>
+        <div className="ref-grid">{refs.map((p) => <ReferenceCard key={p} id={p} />)}</div>
+        <Link to="/principles" className="text-link">Open the full field guide</Link>
+      </details>
 
       <div className="row debrief-actions">
         <button type="button" className="btn btn-ghost btn-lg" onClick={() => { game.replay(id); navigate(`/play/${id}`); }}>
-          <Icon name="replay" />Replay with a different approach
+          <Icon name="replay" />Play it differently
         </button>
         {next && nextOpen
-          ? <Link to={`/zone/${next.id}`} className="btn btn-primary btn-lg">Continue to {next.name}<Icon name="arrow" /></Link>
-          : <Link to="/journey" className="btn btn-primary btn-lg">Back to the world map<Icon name="arrow" /></Link>}
+          ? <Link to={`/zone/${next.id}`} className="btn btn-primary btn-lg">Take the elevator to {next.place} ▸</Link>
+          : <Link to="/journey" className="btn btn-primary btn-lg">Back to the Tower ▸</Link>}
       </div>
     </section>
   );

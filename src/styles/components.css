@@ -181,15 +181,15 @@ textarea { resize: vertical; }
 .delta.down { color: #ff8088; }
 
 /* ---- Toasts ---- */
-.toasts { position: fixed; right: 16px; top: calc(var(--nav-h) + 12px); z-index: 80; display: grid; gap: 10px; width: min(380px, calc(100vw - 32px)); }
+.toasts { position: fixed; right: 16px; bottom: 16px; z-index: 80; pointer-events: none; display: grid; gap: 10px; width: min(300px, calc(100vw - 32px)); }
 .toast {
-  display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: var(--radius);
+  display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius); font-size: 0.9rem;
   background: #15171f; border: 1px solid rgba(240, 198, 106, 0.4); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   animation: toast-in 300ms ease-out;
 }
 .toast > .icon { color: var(--gold); margin-top: 2px; }
 .toast p { margin: 2px 0 0; color: var(--muted); font-size: 0.88rem; }
-.toast .icon-btn { margin-left: auto; }
+.toast .icon-btn { margin-left: auto; pointer-events: auto; }
 @keyframes toast-in { from { transform: translateY(10px); opacity: 0; } }
 
 /* ---- Tables ---- */

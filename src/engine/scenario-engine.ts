@@ -7,6 +7,7 @@ import type {
   Line, Option, Result, Run, Scenario, Stage,
 } from './types';
 
+
 export interface Context {
   /** Flags from earlier scenarios (see Condition). */
   flags: ReadonlySet<string>;
@@ -46,6 +47,8 @@ export function conditionMet(cond: Condition | undefined, run: Run, ctx: Context
     const allowed = Array.isArray(cond.choice.option) ? cond.choice.option : [cond.choice.option];
     if (!picked || !allowed.includes(picked)) return false;
   }
+  if (cond.inspected && !run.inspected.includes(cond.inspected)) return false;
+  if (cond.notInspected && run.inspected.includes(cond.notInspected)) return false;
   return true;
 }
 
@@ -101,16 +104,24 @@ export function missingRequired(stage: ExploreStage, run: Run, ctx: Context): Ho
   return visibleHotspots(stage, run, ctx).filter((h) => stage.required.includes(h.id) && !run.inspected.includes(h.id));
 }
 
+/** Sources that count as evidence for a decision. Secrets never do. */
 export function availableEvidence(scenario: Scenario, decision: DecisionStage, run: Run, ctx: Context): Hotspot[] {
   return exploreStages(scenario)
     .filter((s) => decision.evidenceFrom.includes(s.id))
-    .flatMap((s) => visibleHotspots(s, run, ctx));
+    .flatMap((s) => visibleHotspots(s, run, ctx))
+    .filter((h) => !h.secret);
+}
+
+/** An option is open once the player has examined any one of its unlocking hotspots. */
+export function optionAvailable(option: Option, run: Run): boolean {
+  return !option.unlockedBy?.length || option.unlockedBy.some((id) => run.inspected.includes(id));
 }
 
 export function choose(scenario: Scenario, run: Run, decisionId: string, optionId: string, ctx: Context): Run {
   const decision = decisionStages(scenario).find((d) => d.id === decisionId);
   if (!decision || run.completed || run.choices[decisionId]) return run;
-  if (!decision.options.some((o) => o.id === optionId)) return run;
+  const option = decision.options.find((o) => o.id === optionId);
+  if (!option || !optionAvailable(option, run)) return run;
   const available = availableEvidence(scenario, decision, run, ctx);
   const inspected = available.filter((h) => run.inspected.includes(h.id)).length;
   return {
@@ -301,4 +312,43 @@ export function restoreRun(scenario: Scenario, raw: Run): Run {
   }
   restored.completed = raw.completed === true && decisionStages(scenario).every((d) => choices[d.id]) && Boolean(reflection?.selected.length);
   return restored;
+}
+
+// ---- Medals ----
+
+export type Medal = 'bronze' | 'silver' | 'gold';
+export const MEDALS: Medal[] = ['bronze', 'silver', 'gold'];
+
+export interface MedalCheck {
+  medal: Medal;
+  title: string;
+  /** The transparent learning criterion, shown before and after play. */
+  criterion: string;
+  met: boolean;
+}
+
+export const MEDAL_RULES: Record<Medal, { title: string; criterion: string }> = {
+  bronze: { title: 'Bronze: resolved', criterion: 'See the situation through to the end and write in your notebook.' },
+  silver: { title: 'Silver: sound judgement', criterion: 'Make no decision that backfires (none rated weak) and reach a reasoning score of 60% or more.' },
+  gold: { title: 'Gold: mastery', criterion: 'Every decision rated strong, each made after examining every source available at the time.' },
+};
+
+/** Which medals a finished run earned. A result exists only for a completed run with a reflection. */
+export function medalChecks(scenario: Scenario, result: Result | null): MedalCheck[] {
+  const qualities = decisionStages(scenario).map((d) => d.options.find((o) => o.id === result?.choices[d.id])?.quality);
+  const evidence = result?.criteria.find((c) => c.id === 'evidence')?.score ?? 0;
+  const bronze = Boolean(result);
+  const silver = bronze && !qualities.includes('weak') && (result?.overall ?? 0) >= 60;
+  const gold = bronze && qualities.every((q) => q === 'strong') && evidence >= 1;
+  const met: Record<Medal, boolean> = { bronze, silver, gold };
+  return MEDALS.map((m) => ({ medal: m, ...MEDAL_RULES[m], met: met[m] }));
+}
+
+export function medalFor(scenario: Scenario, result: Result | null): Medal | null {
+  const earned = medalChecks(scenario, result).filter((c) => c.met);
+  return earned.length ? earned[earned.length - 1].medal : null;
+}
+
+export function medalRank(m: Medal | null | undefined): number {
+  return m ? MEDALS.indexOf(m) + 1 : 0;
 }

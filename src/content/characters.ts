@@ -1,94 +1,129 @@
-// Scenario characters. All are fictional and written for this prototype.
+// The people of Halcyon Tower. All fictional. Each is drawn in one of the
+// pixel-art rooms; `sprite` points at their head there, for portraits.
 
 import type { Character } from '../engine/types';
 
 export const CHARACTERS: Character[] = [
-  // Zone 1: The Foundation
+  // Ground floor: the Grand Lobby
   {
-    id: 'dana', name: 'Dana Reyes', role: 'Line Supervisor, Calibration Bay',
-    goal: 'Hit the weekly calibration target without more rework.',
-    perspective: 'Kai has had the training and passed it. If the errors continue, it has to be an attitude problem.',
-    look: { skin: '#b07a55', hair: '#1b1414', hairStyle: 'bun', accent: '#FF303F', outfit: '#2a2d38' },
+    id: 'dana', name: 'Dana Reyes', role: 'Front-of-House Manager',
+    goal: 'Get the new gates working before head office notices the incident count.',
+    perspective: 'Kai passed the training. If the gates keep failing on his shift, that is on Kai.',
+    sprite: { room: 'lobby', x: 240, y: 106 },
   },
   {
-    id: 'kai', name: 'Kai Mensah', role: 'Calibration Technician, 4 months in',
-    goal: 'Get the new rig right without looking like the weak link.',
-    perspective: 'I know the steps on paper. The new rig behaves differently and nobody has shown me how.',
-    look: { skin: '#6b4430', hair: '#0f0c0c', hairStyle: 'fade', accent: '#F0C66A', outfit: '#323646' },
+    id: 'kai', name: 'Kai Mensah', role: 'Night Security Officer, 4 months in',
+    goal: 'Stop being the reason the lobby logs another incident.',
+    perspective: 'I follow the procedure exactly. The new gates just don\'t behave the way it says.',
+    sprite: { room: 'lobby', x: 444, y: 198 },
   },
   {
-    id: 'theo', name: 'Theo Lindqvist', role: 'Senior Technician, 12 years',
-    goal: 'Keep the bay running and avoid being pulled off the line.',
-    perspective: 'Most of what matters on the new rig is not in the manual. We learned it by doing it next to someone.',
-    look: { skin: '#e2c2a6', hair: '#a8a29a', hairStyle: 'short', accent: '#8F1026', outfit: '#3a3a40' },
+    id: 'margit', name: 'Margit Lindqvist', role: 'Head of Security, 12 years',
+    goal: 'Keep the building safe without living in it.',
+    perspective: 'Half of what matters about those gates isn\'t written down. You learn it standing next to someone.',
+    sprite: { room: 'lobby', x: 432, y: 64 },
   },
-  // Zone 2: The Shift
   {
-    id: 'imani', name: 'Imani Okafor', role: 'Operations Lead, Signal Room',
-    goal: 'Bring response times back under the service-level target.',
-    perspective: 'Response times went up when Rafael joined. A tighter script and a performance plan should fix it.',
-    look: { skin: '#5a3a28', hair: '#120d0b', hairStyle: 'curly', accent: '#FF303F', outfit: '#262a35' },
+    id: 'luis', name: 'Luis Ferreira', role: 'Contractor, stuck at the gate',
+    goal: 'Get upstairs before his client gives up on him.',
+    perspective: 'Third night running the gate has eaten my pass.',
+    sprite: { room: 'lobby', x: 86, y: 154 },
+  },
+  {
+    id: 'ines', name: 'Ines Moreau', role: 'Interview candidate',
+    goal: 'Land a job here, if it\'s a job worth having.',
+    perspective: 'This is the third time they\'ve advertised the night role this year.',
+    sprite: { room: 'lobby', x: 62, y: 200 },
+  },
+  // Floor 7: the Data Vault
+  {
+    id: 'imani', name: 'Imani Okafor', role: 'Operations Lead, Data Vault',
+    goal: 'Get response times back under target, today.',
+    perspective: 'The numbers went up when Rafael arrived. That isn\'t a coincidence.',
+    sprite: { room: 'vault', x: 360, y: 160 },
   },
   {
     id: 'rafael', name: 'Rafael Duarte', role: 'Response Analyst, 6 weeks in',
-    goal: 'Prove he belongs on the team.',
-    perspective: 'My queue is full of the hardest cases. I try to solve them myself because nobody escalates here.',
-    look: { skin: '#c18e6a', hair: '#2b1d14', hairStyle: 'short', accent: '#9fb4ff', outfit: '#30343f' },
+    goal: 'Prove he belongs here.',
+    perspective: 'My queue is all the nightmares. Nobody here asks for help, so neither do I.',
+    sprite: { room: 'vault', x: 240, y: 254 },
   },
   {
     id: 'odette', name: 'Odette Varga', role: 'Senior Response Analyst',
-    goal: 'Protect the team\'s way of working.',
-    perspective: 'We have always handled it this way and it worked. New people need to toughen up.',
-    look: { skin: '#e8cdb5', hair: '#5a2320', hairStyle: 'long', accent: '#F0C66A', outfit: '#2d2a33' },
+    goal: 'Protect the way the Vault has always worked.',
+    perspective: 'Nobody held my hand when I started. You figure it out.',
+    sprite: { room: 'vault', x: 120, y: 156 },
   },
-  // Zone 3: The Horizon
   {
-    id: 'priya', name: 'Priya Nair', role: 'Programme Director, Meridian Launch',
-    goal: 'Launch Meridian on the committed date with a product customers trust.',
-    perspective: 'I need every team pulling in the same direction, and right now I can\'t tell if they are.',
-    look: { skin: '#9c6b4c', hair: '#0e0b0b', hairStyle: 'long', accent: '#FF303F', outfit: '#23262f' },
+    id: 'watcher', name: 'The Watcher', role: 'Unknown',
+    goal: 'Unknown.',
+    perspective: 'Has been here longer than the servers.',
+    sprite: { room: 'vault', x: 447, y: 214 },
+  },
+  // Floor 23: the Break Lounge
+  {
+    id: 'priya', name: 'Priya Nair', role: 'Programme Director, Meridian launch',
+    goal: 'Launch on the date she promised, with a product people trust.',
+    perspective: 'Every team says it\'s green. So why does it feel like we\'re losing?',
+    sprite: { room: 'lounge', x: 220, y: 220 },
   },
   {
     id: 'marcus', name: 'Marcus Hale', role: 'Build Team Lead',
-    goal: 'Ship his team\'s module first and get the recognition it deserves.',
-    perspective: 'My team is fast because we push hard. Other teams should match us instead of slowing us down.',
-    look: { skin: '#d9b08f', hair: '#3b2a1f', hairStyle: 'short', accent: '#ff8a5c', outfit: '#2c3040' },
+    goal: 'Ship first and get the credit his team has earned.',
+    perspective: 'My team is fast because we push. Everyone else should keep up.',
+    sprite: { room: 'lounge', x: 297, y: 104 },
   },
   {
     id: 'lena', name: 'Lena Sato', role: 'Customer Support Lead',
-    goal: 'Stop her team drowning in defects they didn\'t create.',
-    perspective: 'Every early release lands on us. We absorb the cost and nobody sees it.',
-    look: { skin: '#e5c4a1', hair: '#141015', hairStyle: 'bun', accent: '#7fd1c7', outfit: '#2b2f39' },
+    goal: 'Stop her team drowning in other people\'s defects.',
+    perspective: 'Every early release lands on us, and nobody upstairs sees it.',
+    sprite: { room: 'lounge', x: 152, y: 136 },
   },
   {
-    id: 'jonah', name: 'Jonah Pierce', role: 'Junior Engineer, Build Team',
+    id: 'ravi', name: 'Ravi Kapoor', role: 'Support Engineer',
+    goal: 'Get through the week.',
+    perspective: 'I\'ve stopped putting my hours on the timesheet. Nobody reads it.',
+    sprite: { room: 'lounge', x: 126, y: 136 },
+  },
+  {
+    id: 'jonah', name: 'Jonah Pierce', role: 'Junior Engineer, Build',
     goal: 'Keep up with the people being praised.',
-    perspective: 'Everyone here works nights. If I stop, I fall behind.',
-    look: { skin: '#7a5136', hair: '#1a1210', hairStyle: 'shaved', accent: '#F0C66A', outfit: '#343846' },
+    perspective: 'Everyone on Build works nights. If I stop, I\'m the one holding them back.',
+    sprite: { room: 'lounge', x: 340, y: 181 },
   },
-  // Zone 4: The Integration Trial
   {
-    id: 'sol', name: 'Sol Andersen', role: 'Incident Commander, Halcyon',
-    goal: 'Restore the client\'s service and keep the partnership.',
-    perspective: 'I have one hour before the client\'s executive call. I need answers, not theories.',
-    look: { skin: '#cfa27f', hair: '#6b6b6b', hairStyle: 'short', accent: '#FF303F', outfit: '#22252e' },
+    id: 'sam', name: 'Sam Okoro', role: 'Barista',
+    goal: 'Keep the coffee flowing and the gossip accurate.',
+    perspective: 'You learn a lot about a company from who orders what, and when.',
+    sprite: { room: 'lounge', x: 78, y: 104 },
+  },
+  // Floor 40: the Executive Suite
+  {
+    id: 'sol', name: 'Sol Andersen', role: 'Chief Executive, Halcyon',
+    goal: 'Keep the biggest client, and the company\'s reputation.',
+    perspective: 'I have one hour before the client\'s board call. I need answers, not theories.',
+    sprite: { room: 'executive', x: 240, y: 110 },
   },
   {
     id: 'mira', name: 'Mira Chen', role: 'On-call Engineer, first rotation',
     goal: 'Get through her first incident without making it worse.',
-    perspective: 'I read the runbook. I have never actually done a failover.',
-    look: { skin: '#ecd0b3', hair: '#0d0b0c', hairStyle: 'long', accent: '#9fb4ff', outfit: '#2e3240' },
+    perspective: 'I\'ve read the runbook three times. I\'ve never actually done a failover.',
+    sprite: { room: 'executive', x: 132, y: 152 },
+  },
+  {
+    id: 'adaeze', name: 'Dr. Adaeze Nwosu', role: 'Client CTO, waiting in the suite',
+    goal: 'Know whether Halcyon can be trusted with her payments.',
+    perspective: 'Outages happen. What I care about is what you do next.',
+    sprite: { room: 'executive', x: 284, y: 158 },
+  },
+  {
+    id: 'bex', name: 'Bex Harlow', role: 'Sol\'s Chief of Staff',
+    goal: 'Protect Sol\'s time and the company\'s story.',
+    perspective: 'Leadership has already told the client it was the vendor. Let\'s not muddy that.',
+    sprite: { room: 'executive', x: 432, y: 124 },
   },
 ];
 
 export function characterById(id: string): Character | undefined {
   return CHARACTERS.find((c) => c.id === id);
 }
-
-/** The four player looks offered at character creation. */
-export const PLAYER_LOOKS: Record<string, { label: string; look: Character['look'] }> = {
-  ember: { label: 'Ember', look: { skin: '#a8744f', hair: '#1a1212', hairStyle: 'curly', accent: '#FF303F', outfit: '#1c1f29' } },
-  onyx: { label: 'Onyx', look: { skin: '#5e3b29', hair: '#0b0909', hairStyle: 'fade', accent: '#F0C66A', outfit: '#1f2230' } },
-  vanta: { label: 'Vanta', look: { skin: '#e9cdb3', hair: '#2a1b18', hairStyle: 'long', accent: '#c3c8ff', outfit: '#20232c' } },
-  signal: { label: 'Signal', look: { skin: '#c89474', hair: '#3a2a20', hairStyle: 'short', accent: '#ff7a52', outfit: '#232733' } },
-};
