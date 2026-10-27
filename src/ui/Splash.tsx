@@ -4,6 +4,7 @@
 // still fade.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { BrandLogo } from './BrandLogo';
 
 const FULL_MS = 4600;
 const REDUCED_MS = 1400;
@@ -49,7 +50,7 @@ export function Splash({ reducedMotion }: { reducedMotion: boolean }) {
       <div className="splash-ring outer" aria-hidden="true" />
       <div className="splash-ring" aria-hidden="true" />
       <div className="splash-ring inner" aria-hidden="true" />
-      <img className="splash-logo" src="./brand/pc-logo-horizontal.png" alt="Performance Capability" width="343" height="106" />
+      <BrandLogo className="splash-logo" />
       <button ref={skip} type="button" className="splash-skip" onClick={(e) => { e.stopPropagation(); leave(); }}>
         Enter ▸
       </button>
