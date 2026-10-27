@@ -6,6 +6,7 @@ import type { Line } from '../../engine/types';
 import { characterById } from '../../content/characters';
 import { useGame } from '../../app/game';
 import { PlayerPortrait, Portrait } from '../sprites';
+import { speak, stopSpeaking } from '../../app/voice';
 
 const CPS = 55; // characters per second
 
@@ -48,6 +49,11 @@ export function Dialogue({ lines, reducedMotion, onDone, resetKey, after }: Prop
     return () => window.clearInterval(t);
   }, [typed, reducedMotion, index]);
   useEffect(() => { if (done) onDone?.(); }, [done, onDone]);
+  // Voice-over: each line is spoken as it appears, in that character's voice.
+  const text = line?.text;
+  const speaker = line?.speaker;
+  useEffect(() => { if (text && speaker) speak(text, speaker); }, [text, speaker, index, resetKey]);
+  useEffect(() => () => stopSpeaking(), []);
 
   if (!line) return null;
 

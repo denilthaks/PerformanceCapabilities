@@ -2,7 +2,9 @@
 // have and haven't seen yet, and (optionally) the framework behind it all.
 // Describes decisions, never the person.
 
+import { useEffect } from 'react';
 import { useGame } from '../../app/game';
+import { play } from '../../app/audio';
 import { navigate } from '../../app/router';
 import {
   band, CRITERION_LABELS, CRITERION_QUESTIONS, decisionStages, exploreStages, medalFor, XP_RULES, type Band,
@@ -89,6 +91,8 @@ export function DebriefScreen({ id }: { id: string }) {
   const zone = zoneForScenario(id);
   const rec = record(progress, id);
   const result = rec.last;
+  const earned = scenario && result ? medalFor(scenario, result) : null;
+  useEffect(() => { if (earned) play('medal'); }, [id, earned]);
 
   if (!scenario || !zone) {
     return <section className="page narrow"><h1>Report not found</h1><Link to="/journey" className="btn btn-primary">Back to the Tower</Link></section>;

@@ -58,7 +58,7 @@ describe('progress store', () => {
     expect(hostile.scenarios['front-gate'].completions).toBe(0);
     expect(hostile.scenarios['front-gate'].run).toBeNull();
     expect(hostile.achievements).toEqual(['ok']);
-    expect(hostile.settings).toEqual({ motion: 'system', textSize: 'normal' });
+    expect(hostile.settings).toEqual({ motion: 'system', textSize: 'normal', sound: true, voice: true });
   });
 
   it('works without storage (private mode) and reports it', () => {
