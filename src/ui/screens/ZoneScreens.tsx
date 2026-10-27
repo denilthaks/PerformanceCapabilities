@@ -29,7 +29,7 @@ export function ZonesScreen() {
           const st = zoneState(progress, z, ZONES);
           const medal = z.scenarioIds.map((id) => record(progress, id).bestMedal).find(Boolean) ?? null;
           return (
-            <li key={z.id} className={`zone-card glass state-${st}`}>
+            <li key={z.id} className={`zone-card glass state-${st}`} data-tilt>
               <Link to={`/zone/${z.id}`} className="zone-card-link">
                 <div className="zone-card-art"><RoomArt room={z.room} crop={[30, 210]} /></div>
                 <div className="zone-card-body">

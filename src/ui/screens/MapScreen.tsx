@@ -38,7 +38,7 @@ export function MapScreen() {
                 <span className="floor-num">{z.floor === 'Ground' ? 'G' : z.floor}</span>
                 {here && <PlayerSprite look={progress.player!.avatar} facing="down" className="shaft-player" />}
               </div>
-              <Link to={`/zone/${z.id}`} className="floor-window">
+              <Link to={`/zone/${z.id}`} className="floor-window" data-tilt>
                 <RoomArt room={z.room} crop={[40, 200]} />
                 <span className="floor-info">
                   <span className="floor-name">{z.place}</span>

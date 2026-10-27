@@ -313,6 +313,10 @@ const checks = [
     await shot(page, '14-progress');
     await go(page, '/principles');
     expect(await page.locator('.status-placeholder').count() >= 8, 'placeholders marked');
+    expect(await page.locator('.codex-card.principle').count() === 12, 'twelve principle cards');
+    await page.click('.codex-card.principle >> nth=0');
+    expect(await page.locator('.codex-card.principle.flipped').count() === 1, 'cards flip');
+    await page.waitForTimeout(700);
     await shot(page, '15-principles');
     await go(page, '/about');
   }],
@@ -359,7 +363,7 @@ const mobileChecks = [
     await page.click('.nav-toggle');
     await page.waitForSelector('.nav-drawer.open');
     await page.click('.nav-drawer a[href="#/principles"]');
-    await page.waitForSelector('h1:has-text("framework")');
+    await page.waitForSelector('h1:has-text("Codex")');
     expect(await page.locator('.nav-drawer.open').count() === 0, 'drawer closes after navigation');
     await go(page, '/create');
     await page.fill('#char-name', 'Sam');

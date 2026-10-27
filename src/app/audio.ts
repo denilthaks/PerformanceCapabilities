@@ -2,7 +2,7 @@
 // to download. Browsers only allow audio after the player's first click or
 // key press, so the context is created lazily on the first sound.
 
-export type Sfx = 'click' | 'select' | 'confirm' | 'discover' | 'secret' | 'medal' | 'bloom';
+export type Sfx = 'click' | 'select' | 'confirm' | 'discover' | 'secret' | 'medal';
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -70,12 +70,6 @@ export function play(sfx: Sfx) {
     case 'medal':
       [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.11, 0.3, { type: 'triangle', gain: 0.6 }));
       tone(1047, 0.48, 0.7, { type: 'sine', gain: 0.4 });
-      break;
-    case 'bloom':
-      // A low swell that rises as the ring opens.
-      tone(55, 0, 2.6, { type: 'sawtooth', gain: 0.18, slideTo: 110 });
-      tone(110, 0.2, 2.4, { type: 'sine', gain: 0.35, slideTo: 220 });
-      tone(880, 1.6, 1.2, { type: 'sine', gain: 0.12 });
       break;
   }
 }
