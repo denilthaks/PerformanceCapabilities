@@ -3,9 +3,6 @@ import { GameProvider, useGame } from './game';
 import { sectionOf, useRoute, type Route } from './router';
 import { focusMainHeading } from './a11y';
 import { NavBar } from '../ui/NavBar';
-import { Ambient } from '../world/Ambient';
-import { zoneState } from '../engine/progression';
-import { ZONES } from '../content/zones';
 import { HomeScreen } from '../ui/screens/HomeScreen';
 import { CreateScreen } from '../ui/screens/CreateScreen';
 import { MapScreen } from '../ui/screens/MapScreen';
@@ -44,7 +41,7 @@ function Screen({ route }: { route: Route }) {
 
 function ToastItem({ toast, onDismiss }: { toast: { id: number; title: string; text: string }; onDismiss: (id: number) => void }) {
   useEffect(() => {
-    const t = window.setTimeout(() => onDismiss(toast.id), 5000);
+    const t = window.setTimeout(() => onDismiss(toast.id), 3500);
     return () => window.clearTimeout(t);
   }, [toast.id, onDismiss]);
   return (
@@ -63,21 +60,19 @@ function ToastItem({ toast, onDismiss }: { toast: { id: number; title: string; t
 
 function Toasts() {
   const { toasts, dismissToast } = useGame();
-  // Show at most two at once so they never bury the game; the rest follow.
+  // One at a time, so they never bury the game; the rest follow.
   return (
     <div className="toasts">
-      {toasts.slice(0, 2).map((t) => <ToastItem key={t.id} toast={t} onDismiss={dismissToast} />)}
+      {toasts.slice(0, 1).map((t) => <ToastItem key={t.id} toast={t} onDismiss={dismissToast} />)}
     </div>
   );
 }
 
 function Shell() {
   const route = useRoute();
-  const { progress, storageAvailable } = useGame();
+  const { storageAvailable } = useGame();
   const main = useRef<HTMLElement>(null);
   const key = route.name === 'not-found' ? route.path : 'id' in route ? `${route.name}/${route.id}` : route.name;
-  const ambient = route.name === 'home' || route.name === 'map' || route.name === 'create';
-  const lit = ZONES.filter((z) => zoneState(progress, z, ZONES) !== 'locked').length;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -87,7 +82,6 @@ function Shell() {
   return (
     <>
       <a className="skip-link" href="#main" onClick={(e) => { e.preventDefault(); focusMainHeading(main.current); }}>Skip to content</a>
-      {ambient && <Ambient lit={lit} />}
       <NavBar section={sectionOf(route)} />
       {!storageAvailable && (
         <p className="banner" role="status">Your browser is blocking local storage, so progress will be lost when you close this tab.</p>

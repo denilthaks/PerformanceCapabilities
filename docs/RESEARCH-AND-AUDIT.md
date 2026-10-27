@@ -67,3 +67,48 @@ These were seen in search results but left out because they couldn't be confirme
    - The Integration Trial: a three-phase crisis whose cast and evidence depend on earlier decisions, ending in a journey-wide debrief.
 4. **Persistence and feedback:** versioned and sanitised localStorage, XP (best run kept), insight fragments, evidence records, emblems and artefacts, achievements for learning behaviours, a learning journal, and reset with confirmation.
 5. **Quality assurance:** unit tests for the engine, content validation and persistence. An e2e script runs in real Chromium at desktop size, phone size and without WebGL.
+
+---
+
+# Phase 2: learning must emerge from gameplay
+
+## Asset audit (supplied files)
+
+| File | What it is | Decision |
+|---|---|---|
+| `Grand_Lobby-html.zip`, `Data_Vault-html.zip`, `Break_Lounge-html.zip`, `Executive_Suite-html.zip` | Four 480 × 300 pixel-art room scenes exported from a design tool as standalone pages: static SVG with a few SMIL animations, plus a design-tool runtime. | **Used.** The SVG markup was extracted, without the design runtime, into `src/assets/rooms/`. It was checked to contain no scripts or links. The lobby's walking businessman became the player sprite (`src/ui/sprites.tsx`), recoloured for four looks. Character portraits are cropped live from the room art. Together the rooms became one building, Halcyon Tower, with one floor per zone. |
+| `chapter2_season7_map.glb` | Sketchfab download "Chapter2 Season7 Map", by CoolCat, labelled CC-BY-4.0. Its single texture is the official Fortnite Chapter 2 Season 7 island map. | **Not used.** The uploader's CC-BY licence can't cover Epic Games' map artwork. It's also a bright fantasy island, which the original brief ruled out and which clashes with the Tower. Not added to the repository. |
+
+## Immersion review: what changed on each screen
+
+The test for every screen: *does this make the player feel more immersed, or does it pull them out to read instructions?*
+
+| Before | After |
+|---|---|
+| Home: a slogan plus a three-step "how it works" list | The lobby at night behind a short hook. One button: **Walk in** |
+| Character creation: a form | A staff pass; **Badge in** takes you straight into the lobby |
+| World map: abstract nodes | Halcyon Tower in cross-section, drawn from the four rooms, with an elevator shaft showing where you are |
+| Zone page: objectives, framework links, an artefact list | A floor's door: the hook, who's inside, the medals and what they take |
+| Exploration: SVG backdrop, a points-of-interest list, an instructions paragraph | A walkable room (click, touch, or arrows + E). Markers over people and things, name tags on hover, and one "Now" line |
+| Dialogue: text blocks | An RPG dialogue box with typed lines and pixel portraits. Characters' lines change with what you've already found |
+| Decision: a form with radio cards | The character asks you; you pick a spoken reply. **Some replies only appear once you've found the right person or clue** |
+| Consequence: a panel of feedback cards with framework references | Speech bubbles over the people in the room, a short outcome, the room's meters, and a plain-language "why" |
+| Reflection | "Your notebook" |
+| Debrief: score, rubric table, framework cards | A floor report: the medal and what each medal takes, how it played out, and how many outcomes you haven't seen yet. The rubric and framework detail are in collapsed sections |
+| Review of past decisions | The elevator ride up, flipping through your notebook |
+
+Framework terminology never appears during play; a unit test enforces this. It lives in the floor report's collapsed "Field notes", the journal, and the Principles page.
+
+## Bronze, silver, gold
+
+These are transparent learning criteria, shown on each floor's door before play and ticked in the report after:
+
+- **Bronze, resolved:** see the situation through and write in your notebook.
+- **Silver, sound judgement:** no decision rated weak, and a reasoning score of at least 60%.
+- **Gold, mastery:** every decision rated strong, each made after examining every source available at the time.
+
+The best medal per floor is kept.
+
+## What was removed
+
+The Three.js ambient world (and the `three` dependency, about 120 KB gzipped). The pixel rooms now establish the world, and a 3D obsidian backdrop beside pixel art broke the "one consistent world" requirement. The code is in git history (`src/world/`, removed in this phase) if it's wanted again.

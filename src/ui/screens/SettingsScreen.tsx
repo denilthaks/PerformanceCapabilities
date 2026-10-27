@@ -3,11 +3,9 @@
 import { useRef } from 'react';
 import { useGame } from '../../app/game';
 import { navigate } from '../../app/router';
-import type { Graphics, Motion, TextSize } from '../../engine/progress-store';
-import { PLAYER_LOOKS } from '../../content/characters';
-import { webglAvailable } from '../../world/capabilities';
+import type { Motion, TextSize } from '../../engine/progress-store';
 import { Link } from '../common';
-import { Portrait } from '../Portrait';
+import { PLAYER_LOOKS, PlayerPortrait } from '../sprites';
 
 function Choice<T extends string>({ legend, name, value, options, onChange, hint }: {
   legend: string; name: string; value: T; options: { value: T; label: string }[]; onChange(v: T): void; hint?: string;
@@ -48,24 +46,22 @@ export function SettingsScreen() {
         <h2>Profile</h2>
         {p ? (
           <div className="row">
-            <Portrait look={PLAYER_LOOKS[p.avatar].look} size={72} />
+            <PlayerPortrait look={p.avatar} size={72} />
             <span><strong>{p.name}</strong><br /><span className="muted">{PLAYER_LOOKS[p.avatar].label}</span></span>
-            <Link to="/create" className="btn btn-ghost btn-sm">Edit character</Link>
+            <Link to="/create" className="btn btn-ghost btn-sm">Edit pass</Link>
           </div>
         ) : (
-          <p>No character yet. <Link to="/create" className="btn btn-primary btn-sm">Create character</Link></p>
+          <p>No pass yet. <Link to="/create" className="btn btn-primary btn-sm">Get your pass</Link></p>
         )}
       </section>
 
       <section className="glass panel-pad">
         <h2>Accessibility and display</h2>
         <Choice<Motion> legend="Motion" name="motion" value={s.motion} onChange={(v) => updateSettings({ motion: v })}
-          options={[{ value: 'system', label: 'Match my device' }, { value: 'reduce', label: 'Reduce' }, { value: 'full', label: 'Full' }]} />
+          options={[{ value: 'system', label: 'Match my device' }, { value: 'reduce', label: 'Reduce' }, { value: 'full', label: 'Full' }]}
+          hint="Reduce turns off walking animation, typed-out dialogue and room effects. Your character moves instantly." />
         <Choice<TextSize> legend="Text size" name="text" value={s.textSize} onChange={(v) => updateSettings({ textSize: v })}
           options={[{ value: 'normal', label: 'Normal' }, { value: 'large', label: 'Large' }]} />
-        <Choice<Graphics> legend="3D background" name="graphics" value={s.graphics} onChange={(v) => updateSettings({ graphics: v })}
-          options={[{ value: 'auto', label: 'Automatic' }, { value: 'on', label: 'Full quality' }, { value: 'off', label: 'Off' }]}
-          hint={webglAvailable() ? 'The 3D world is decorative. Turning it off saves battery and changes nothing in the game.' : 'Your browser does not support WebGL, so a flat background is used. Everything else works the same.'} />
       </section>
 
       <section className="glass panel-pad">
@@ -80,7 +76,7 @@ export function SettingsScreen() {
 
       <dialog ref={dialog} className="confirm glass" aria-labelledby="reset-title">
         <h2 id="reset-title">Reset all progress?</h2>
-        <p>This permanently deletes your character, scores, achievements, journal and evidence archive from this browser. It can't be undone.</p>
+        <p>This permanently deletes your pass, medals, memos, notebook and clue archive from this browser. It can't be undone.</p>
         <div className="row">
           <button type="button" className="btn btn-ghost" onClick={closeConfirm} autoFocus>Cancel</button>
           <button type="button" className="btn btn-danger" onClick={() => { reset(); closeConfirm(); navigate('/'); }}>Yes, reset everything</button>

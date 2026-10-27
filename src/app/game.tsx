@@ -7,7 +7,7 @@ import {
   withReplay, withRun, withSettings, type Progress, type Settings,
 } from '../engine/progress-store';
 import { ACHIEVEMENTS, earnedAchievements } from '../engine/progression';
-import { decisionStages, chosenOption, score, type Context } from '../engine/scenario-engine';
+import { decisionStages, chosenOption, medalFor, score, type Context } from '../engine/scenario-engine';
 import type { Result, Run } from '../engine/types';
 import { SCENARIO_MAP } from '../content/scenarios';
 import { ZONES } from '../content/zones';
@@ -88,6 +88,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       update((p) => withCompletion(p, run, result, {
         principleIds: [...new Set(chosen.flatMap((c) => c.o?.principleIds ?? []))],
         insights: chosen.filter((c) => c.o?.quality === 'strong').map((c) => `${scenario.id}/${c.d.id}`),
+        medal: medalFor(scenario, result),
         journal: reflection && reflectionStage?.kind === 'reflection'
           ? {
             id: `${scenario.id}-${Date.now()}`,

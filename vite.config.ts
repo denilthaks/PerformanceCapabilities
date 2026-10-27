@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 // Relative base so the build works at any GitHub Pages project path and from
@@ -11,7 +11,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
-        manualChunks: { three: ['three'], react: ['react', 'react-dom'] },
+        manualChunks: { react: ['react', 'react-dom'] },
       },
     },
   },

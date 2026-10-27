@@ -1,54 +1,85 @@
-// Dialogue shown a line at a time, with speaker portraits.
+// The RPG dialogue box: one line at a time, typed out, with the speaker's
+// pixel portrait. Click, tap or press Enter to advance.
 
 import { useEffect, useRef, useState } from 'react';
 import type { Line } from '../../engine/types';
-import { characterById, PLAYER_LOOKS } from '../../content/characters';
+import { characterById } from '../../content/characters';
 import { useGame } from '../../app/game';
-import { Portrait } from '../Portrait';
+import { PlayerPortrait, Portrait } from '../sprites';
 
-export function SpeakerLine({ line }: { line: Line }) {
+const CPS = 55; // characters per second
+
+export function Speaker({ id }: { id: string }) {
   const { progress } = useGame();
-  if (line.speaker === 'narrator') return <p className="line line-narrator">{line.text}</p>;
-  const isPlayer = line.speaker === 'player';
-  const c = isPlayer ? null : characterById(line.speaker);
-  const look = isPlayer ? PLAYER_LOOKS[progress.player?.avatar ?? 'ember'].look : c?.look;
-  const name = isPlayer ? progress.player?.name ?? 'You' : c?.name ?? line.speaker;
-  return (
-    <div className={`line line-speech${isPlayer ? ' line-player' : ''}`}>
-      {look && <Portrait look={look} size={44} />}
-      <div>
-        <span className="line-name">{name}</span>
-        <p>{line.text}</p>
-      </div>
-    </div>
-  );
+  if (id === 'narrator') return null;
+  if (id === 'player') return <PlayerPortrait look={progress.player?.avatar ?? 'ember'} size={64} />;
+  return <Portrait characterId={id} size={64} />;
 }
 
-/** Reveals lines one by one. Calls onDone once every line is visible. */
-export function Dialogue({ lines, onDone, resetKey }: { lines: Line[]; onDone?: () => void; resetKey?: string }) {
-  const [shown, setShown] = useState(1);
-  const end = useRef<HTMLDivElement>(null);
+export function speakerName(id: string, playerName?: string): string {
+  if (id === 'player') return playerName || 'You';
+  return characterById(id)?.name ?? '';
+}
+
+interface Props {
+  lines: Line[];
+  reducedMotion: boolean;
+  onDone?: () => void;
+  resetKey?: string;
+  /** Shown once the last line is visible (e.g. a Continue button). */
+  after?: React.ReactNode;
+}
+
+export function Dialogue({ lines, reducedMotion, onDone, resetKey, after }: Props) {
+  const { progress } = useGame();
+  const [index, setIndex] = useState(0);
+  const [chars, setChars] = useState(reducedMotion ? Infinity : 0);
   const next = useRef<HTMLButtonElement>(null);
-  const done = shown >= lines.length;
+  const line = lines[Math.min(index, lines.length - 1)];
+  const full = line ? line.text.length : 0;
+  const typed = chars >= full;
+  const lastLine = index >= lines.length - 1;
+  const done = lastLine && typed;
 
-  useEffect(() => { setShown(1); }, [resetKey]);
-  useEffect(() => { if (done) onDone?.(); }, [done, onDone]);
+  useEffect(() => { setIndex(0); setChars(reducedMotion ? Infinity : 0); }, [resetKey, reducedMotion]);
   useEffect(() => {
-    if (shown > 1) end.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [shown]);
+    if (typed || reducedMotion) return;
+    const t = window.setInterval(() => setChars((c) => c + 1), 1000 / CPS);
+    return () => window.clearInterval(t);
+  }, [typed, reducedMotion, index]);
+  useEffect(() => { if (done) onDone?.(); }, [done, onDone]);
 
+  if (!line) return null;
+
+  const advance = () => {
+    if (!typed) { setChars(Infinity); return; }
+    if (!lastLine) { setIndex((i) => i + 1); setChars(reducedMotion ? Infinity : 0); }
+  };
+
+  const narrator = line.speaker === 'narrator';
   return (
-    <div className="dialogue">
-      <div className="dialogue-lines" aria-live="polite">
-        {lines.slice(0, shown).map((l, i) => <SpeakerLine key={i} line={l} />)}
-        <div ref={end} />
-      </div>
-      {!done && (
-        <div className="row">
-          <button ref={next} type="button" className="btn btn-ghost" onClick={() => setShown((n) => n + 1)}>Next</button>
-          <button type="button" className="btn btn-text" onClick={() => setShown(lines.length)}>Show all</button>
+    <div className={`dialogue-box${narrator ? ' narrator' : ''}${line.speaker === 'player' ? ' player' : ''}`}>
+      <Speaker id={line.speaker} />
+      <div className="dialogue-body">
+        {!narrator && <span className="dialogue-name">{speakerName(line.speaker, progress.player?.name)}</span>}
+        <p className="dialogue-text" aria-live="polite" onClick={advance}>
+          <span>{line.text.slice(0, chars)}</span>
+          {/* Reserve the full line's space so the box doesn't jump while typing. */}
+          <span className="ghost" aria-hidden="true">{line.text.slice(chars)}</span>
+        </p>
+        <div className="dialogue-actions">
+          {!done && (
+            <button ref={next} type="button" className="btn btn-pixel" onClick={advance} autoFocus>
+              {typed ? 'Next ▸' : 'Skip ▸'}
+            </button>
+          )}
+          {!done && lines.length > 1 && (
+            <button type="button" className="btn btn-text btn-sm" onClick={() => { setIndex(lines.length - 1); setChars(Infinity); }}>Skip all</button>
+          )}
+          {done && after}
+          <span className="dialogue-count" aria-hidden="true">{index + 1}/{lines.length}</span>
         </div>
-      )}
+      </div>
     </div>
   );
 }

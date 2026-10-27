@@ -4,10 +4,11 @@
 // persistence: anyone with access to the browser can read or edit it.
 
 import type { Result, Run, Scenario } from './types';
-import { restoreRun } from './scenario-engine';
+import { MEDALS, restoreRun, type Medal } from './scenario-engine';
 
 export const STORAGE_KEY = 'pc-journey.progress';
-export const SCHEMA_VERSION = 1;
+// v2: Halcyon Tower (new scenario ids, medals, discovered outcomes). v1 saves start fresh.
+export const SCHEMA_VERSION = 2;
 export const AVATARS = ['ember', 'onyx', 'vanta', 'signal'] as const;
 export const MAX_NAME_LENGTH = 24;
 const MAX_XP = 100000;
@@ -18,9 +19,8 @@ const ID = /^[a-z0-9-]{1,64}$/;
 export type Avatar = (typeof AVATARS)[number];
 export type Motion = 'system' | 'reduce' | 'full';
 export type TextSize = 'normal' | 'large';
-export type Graphics = 'auto' | 'on' | 'off';
 
-export interface Settings { motion: Motion; textSize: TextSize; graphics: Graphics }
+export interface Settings { motion: Motion; textSize: TextSize }
 
 export interface HistoryEntry {
   at: number;
@@ -37,6 +37,8 @@ export interface ScenarioRecord {
   /** Result of the most recent completed run, shown on the debrief screen. */
   last: Result | null;
   history: HistoryEntry[];
+  /** Best medal earned on this floor. */
+  bestMedal: Medal | null;
 }
 
 export interface JournalEntry {
@@ -60,6 +62,8 @@ export interface Progress {
   principles: string[];
   /** Decisions that earned an insight fragment, as "scenarioId/decisionId". */
   insights: string[];
+  /** Outcomes the player has seen, as "scenarioId/decisionId/optionId". Drives replay discovery. */
+  outcomes: string[];
   settings: Settings;
 }
 
@@ -70,18 +74,18 @@ export interface StorageLike {
 }
 
 export function defaultSettings(): Settings {
-  return { motion: 'system', textSize: 'normal', graphics: 'auto' };
+  return { motion: 'system', textSize: 'normal' };
 }
 
 export function defaultProgress(): Progress {
   return {
     version: SCHEMA_VERSION, player: null, scenarios: {}, achievements: [], journal: [],
-    evidence: [], principles: [], insights: [], settings: defaultSettings(),
+    evidence: [], principles: [], insights: [], outcomes: [], settings: defaultSettings(),
   };
 }
 
 export function emptyRecord(): ScenarioRecord {
-  return { run: null, completions: 0, bestOverall: 0, bestXp: 0, last: null, history: [] };
+  return { run: null, completions: 0, bestOverall: 0, bestXp: 0, last: null, history: [], bestMedal: null };
 }
 
 function clampInt(value: unknown, max = MAX_XP): number {
@@ -114,7 +118,6 @@ function sanitizeSettings(raw: unknown): Settings {
     const r = raw as Record<string, unknown>;
     if (['system', 'reduce', 'full'].includes(r.motion as string)) settings.motion = r.motion as Motion;
     if (['normal', 'large'].includes(r.textSize as string)) settings.textSize = r.textSize as TextSize;
-    if (['auto', 'on', 'off'].includes(r.graphics as string)) settings.graphics = r.graphics as Graphics;
   }
   return settings;
 }
@@ -168,6 +171,7 @@ function sanitizeRecord(id: string, raw: unknown): ScenarioRecord | null {
     bestXp: clampInt(r.bestXp),
     last: sanitizeResult(id, r.last),
     history,
+    bestMedal: (MEDALS as string[]).includes(r.bestMedal as string) ? (r.bestMedal as Medal) : null,
   };
 }
 
@@ -209,6 +213,7 @@ export function sanitizeProgress(raw: unknown): Progress {
     evidence: stringList(data.evidence, /^[a-z0-9-]{1,64}\/[a-z0-9-]{1,64}$/, 1000),
     principles: stringList(data.principles, ID, 100),
     insights: stringList(data.insights, /^[a-z0-9-]{1,64}\/[a-z0-9-]{1,64}$/, 500),
+    outcomes: stringList(data.outcomes, /^[a-z0-9-]{1,64}\/[a-z0-9-]{1,64}\/[a-z0-9-]{1,64}$/, 1000),
     settings: sanitizeSettings(data.settings),
   };
 }
@@ -276,13 +281,18 @@ function addUnique(list: string[], items: string[]): string[] {
   return missing.length ? [...list, ...missing] : list;
 }
 
-/** Save an in-progress run, plus any evidence it has uncovered. */
+function outcomeKeys(run: Run): string[] {
+  return Object.entries(run.choices).map(([d, o]) => `${run.scenarioId}/${d}/${o}`);
+}
+
+/** Save an in-progress run, plus any evidence and outcomes it has uncovered. */
 export function withRun(progress: Progress, run: Run): Progress {
   const rec = record(progress, run.scenarioId);
   return {
     ...progress,
     scenarios: { ...progress.scenarios, [run.scenarioId]: { ...rec, run } },
     evidence: addUnique(progress.evidence, run.inspected.map((h) => `${run.scenarioId}/${h}`)),
+    outcomes: addUnique(progress.outcomes, outcomeKeys(run)),
   };
 }
 
@@ -291,6 +301,7 @@ export interface CompletionExtras {
   /** "scenarioId/decisionId" for each strong decision in this run. */
   insights: string[];
   journal: JournalEntry | null;
+  medal: Medal | null;
 }
 
 /**
@@ -306,6 +317,7 @@ export function withCompletion(progress: Progress, run: Run, result: Result, ext
     bestOverall: Math.max(rec.bestOverall, result.overall),
     bestXp: Math.max(rec.bestXp, result.xp),
     last: result,
+    bestMedal: MEDALS.indexOf(extras.medal as Medal) > MEDALS.indexOf(rec.bestMedal as Medal) ? extras.medal : rec.bestMedal,
     history: alreadyCounted ? rec.history : [...rec.history, { at: now, choices: result.choices, overall: result.overall }].slice(-MAX_HISTORY),
   };
   const journal = extras.journal && !alreadyCounted ? [...progress.journal, extras.journal].slice(-MAX_JOURNAL) : progress.journal;
@@ -313,6 +325,7 @@ export function withCompletion(progress: Progress, run: Run, result: Result, ext
     ...progress,
     scenarios: { ...progress.scenarios, [run.scenarioId]: next },
     evidence: addUnique(progress.evidence, run.inspected.map((h) => `${run.scenarioId}/${h}`)),
+    outcomes: addUnique(progress.outcomes, outcomeKeys(run)),
     principles: addUnique(progress.principles, extras.principleIds),
     insights: addUnique(progress.insights, extras.insights),
     journal,

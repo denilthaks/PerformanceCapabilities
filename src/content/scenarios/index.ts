@@ -1,12 +1,13 @@
-// Every playable scenario. To add one: write a Scenario object, list it here
-// and add its id to a zone in ../zones.ts. tests/content.test.ts validates it.
+// Every playable scenario, one per floor of Halcyon Tower. To add one: write a
+// Scenario object, list it here and add its id to a zone in ../zones.ts.
+// tests/content.test.ts validates it.
 
 import type { Scenario } from '../../engine/types';
-import { stalledRig } from './stalled-rig';
-import { signalRoom } from './signal-room';
-import { meridianLaunch } from './meridian-launch';
-import { crucible } from './crucible';
+import { frontGate } from './front-gate';
+import { signalVault } from './signal-vault';
+import { lateShift } from './late-shift';
+import { topFloor } from './top-floor';
 
-export const SCENARIOS: Scenario[] = [stalledRig, signalRoom, meridianLaunch, crucible];
+export const SCENARIOS: Scenario[] = [frontGate, signalVault, lateShift, topFloor];
 
 export const SCENARIO_MAP = new Map(SCENARIOS.map((s) => [s.id, s]));

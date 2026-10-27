@@ -4,60 +4,76 @@ import { ZONES } from '../src/content/zones';
 import { CHARACTERS } from '../src/content/characters';
 import { GAME_CONCEPTS, LEVELS, PRINCIPLES, SEVEN_STARS } from '../src/content/principles';
 import { validateScenario, validateZones } from '../src/engine/validation';
+import { MEMO_IDS } from '../src/engine/progression';
+import { decisionStages, exploreStages, score } from '../src/engine/scenario-engine';
 import { playThrough } from './helpers';
-import { score } from '../src/engine/scenario-engine';
 
 const refs = {
   characterIds: new Set(CHARACTERS.map((c) => c.id)),
   referenceIds: new Set([...PRINCIPLES.map((p) => p.id), ...LEVELS.map((l) => l.id), ...GAME_CONCEPTS.map((c) => c.id)]),
   scenarioIds: new Set(SCENARIOS.map((s) => s.id)),
 };
+const ALL_FLAGS = { flags: new Set(['front-gate:paired-practice', 'signal-vault:redesigned-routing', 'late-shift:shared-measure']) };
 
 describe('content', () => {
   it.each(SCENARIOS.map((s) => [s.id, s] as const))('scenario %s is valid', (_, s) => {
     expect(validateScenario(s, refs)).toEqual([]);
   });
 
-  it('zones are valid and every scenario belongs to exactly one zone', () => {
+  it('zones are the four floors, each with one scenario in its own room', () => {
     expect(validateZones(ZONES, SCENARIO_MAP)).toEqual([]);
-    expect(new Set(ZONES.flatMap((z) => z.scenarioIds))).toEqual(new Set(SCENARIOS.map((s) => s.id)));
+    expect(ZONES.map((z) => z.room)).toEqual(['lobby', 'vault', 'lounge', 'executive']);
+    for (const z of ZONES) for (const id of z.scenarioIds) expect(SCENARIO_MAP.get(id)!.room).toBe(z.room);
   });
 
-  it('has four zones, and only zones 1–3 claim a published framework level', () => {
-    expect(ZONES).toHaveLength(4);
+  it('only zones 1–3 claim a published framework level', () => {
     expect(ZONES.filter((z) => z.publishedLevel).map((z) => z.id)).toEqual(['foundation', 'shift', 'horizon']);
-    const trial = ZONES.find((z) => z.id === 'trial')!;
-    expect(trial.alignment.toLowerCase()).not.toContain('level 4');
+    expect(ZONES[3].alignment.toLowerCase()).not.toContain('level 4');
   });
 
   it('lists 12 principles, 4 per level, and marks unverified ones as placeholders', () => {
     expect(PRINCIPLES).toHaveLength(12);
     for (const level of LEVELS) expect(PRINCIPLES.filter((p) => p.level === level.id)).toHaveLength(4);
-    for (const p of PRINCIPLES.slice(4)) {
-      expect(p.titleStatus).toBe('placeholder');
-      expect(p.summary.toLowerCase()).toContain('placeholder');
-    }
-  });
-
-  it('does not name or score the seven needs', () => {
+    for (const p of PRINCIPLES.slice(4)) expect(p.titleStatus).toBe('placeholder');
     expect(SEVEN_STARS.needsStatus).toBe('placeholder');
   });
 
-  it('every scenario can be completed with the strongest and the weakest choices', () => {
+  it('keeps framework jargon out of in-play feedback (it lives in the debrief and journal)', () => {
     for (const s of SCENARIOS) {
-      for (const q of ['strong', 'weak'] as const) {
-        const run = playThrough(s, q);
-        expect(run.completed, `${s.id} ${q}`).toBe(true);
+      for (const d of decisionStages(s)) for (const o of d.options) {
+        expect(o.feedback, `${s.id}/${o.id}`).not.toMatch(/\bPrinciple \d|\bLevel \d|Transactional|Transformational|Transcendental/);
       }
     }
   });
 
-  it('strong choices with full evidence score higher than weak choices', () => {
-    for (const s of SCENARIOS) {
-      const strong = score(s, playThrough(s, 'strong', true)).overall;
-      const weak = score(s, playThrough(s, 'weak', false)).overall;
-      expect(strong, s.id).toBeGreaterThan(weak);
+  it('hides one founder\'s memo on every floor', () => {
+    for (const m of MEMO_IDS) {
+      const [sid, hid] = m.split('/');
+      const h = exploreStages(SCENARIO_MAP.get(sid)!).flatMap((st) => st.hotspots).find((x) => x.id === hid);
+      expect(h?.secret, m).toBe(true);
+    }
+  });
+
+  it('every scenario can be completed with strong or weak choices, with or without earlier decisions', () => {
+    for (const s of SCENARIOS) for (const ctx of [undefined, ALL_FLAGS]) for (const q of ['strong', 'weak'] as const) {
+      expect(playThrough(s, q, true, ctx).completed, `${s.id} ${q}`).toBe(true);
+      expect(playThrough(s, q, false, ctx).completed, `${s.id} ${q} minimal`).toBe(true);
+    }
+  });
+
+  it('a thorough, strong playthrough scores 100%; a careless one scores lower', () => {
+    for (const s of SCENARIOS) for (const ctx of [undefined, ALL_FLAGS]) {
+      const strong = score(s, playThrough(s, 'strong', true, ctx)).overall;
+      const weak = score(s, playThrough(s, 'weak', false, ctx)).overall;
       expect(strong, s.id).toBe(100);
+      expect(weak, s.id).toBeLessThan(strong);
+    }
+  });
+
+  it('exploring is what opens the strongest choices: skipping optional people locks them', () => {
+    for (const s of SCENARIOS) {
+      const minimal = score(s, playThrough(s, 'strong', false)).overall;
+      expect(minimal, s.id).toBeLessThan(100);
     }
   });
 });

@@ -1,71 +1,71 @@
 {
-  "when": "2026-10-27T18:13:25.352Z",
+  "when": "2026-10-27T22:11:38.758Z",
   "results": [
     {
       "id": "home",
-      "title": "Home loads with title, CTA and the 3D ambient world (or its fallback)",
+      "title": "Home invites the player in, over the lobby art",
       "ok": true,
-      "ms": 3269
+      "ms": 1025
     },
     {
       "id": "nav-links",
       "title": "Every navigation link leads to a working screen with an active state",
       "ok": true,
-      "ms": 2931
+      "ms": 833
     },
     {
       "id": "locked",
-      "title": "Zones are locked before a character exists, and play is refused",
+      "title": "Without a pass, every floor is locked and play is refused",
       "ok": true,
-      "ms": 3939
+      "ms": 42
     },
     {
       "id": "create",
-      "title": "Character creation validates and saves",
+      "title": "Getting a pass validates the name and walks straight into the lobby",
       "ok": true,
-      "ms": 6780
+      "ms": 1985
     },
     {
-      "id": "zone1",
-      "title": "Zone 1: full playable scenario with consequences, feedback and debrief",
+      "id": "lobby",
+      "title": "The lobby: walking, talking, discovery-gated replies, consequences, a gold medal",
       "ok": true,
-      "ms": 30641
+      "ms": 13186
     },
     {
-      "id": "persist",
-      "title": "Progress persists across refresh; Zone 2 unlocks; replay works and keeps best",
+      "id": "replay",
+      "title": "Replays keep the best medal and reveal outcomes still undiscovered",
       "ok": true,
-      "ms": 18933
+      "ms": 6880
     },
     {
-      "id": "zones234",
-      "title": "Zones 2–4 are playable, unlock in order, and carry earlier decisions forward",
+      "id": "floors",
+      "title": "Floors 2–4 unlock in order, play through, and carry earlier decisions forward",
       "ok": true,
-      "ms": 104560
+      "ms": 21630
     },
     {
       "id": "progress",
-      "title": "Progress page shows XP, achievements, journal and evidence",
+      "title": "Progress shows medals, the founder's memos, achievements and the notebook",
       "ok": true,
-      "ms": 2953
+      "ms": 965
     },
     {
       "id": "settings",
-      "title": "Settings: text size, 3D off fallback, and reset with confirmation",
+      "title": "Settings: text size, and reset only after confirmation",
       "ok": true,
-      "ms": 3300
+      "ms": 708
+    },
+    {
+      "id": "naive",
+      "title": "A player who skims (required people only, first reply offered) can finish every floor",
+      "ok": true,
+      "ms": 7887
     },
     {
       "id": "mobile",
-      "title": "Mobile (375×740): no horizontal overflow, working menu, playable scenario",
+      "title": "Phone (375×740): no horizontal overflow, working menu, a full floor by touch",
       "ok": true,
-      "ms": 17614
-    },
-    {
-      "id": "no-webgl",
-      "title": "Without WebGL, the game falls back to a flat background and still works",
-      "ok": true,
-      "ms": 2575
+      "ms": 9276
     },
     {
       "id": "console",
