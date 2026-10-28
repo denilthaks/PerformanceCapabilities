@@ -11,12 +11,17 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const DIST = path.join(ROOT, 'dist');
-const OUT = path.join(ROOT, 'docs', 'prototype');
+// Overrides let the same checks run against an unpacked download:
+//   E2E_DIST  a built site folder to serve (default: dist/)
+//   E2E_URL   a page to open directly, e.g. file:///…/prototype-standalone.html
+//   E2E_OUT   where screenshots and results go (default: docs/prototype/)
+const DIST = path.resolve(process.env.E2E_DIST || path.join(ROOT, 'dist'));
+const OUT = path.resolve(process.env.E2E_OUT || path.join(ROOT, 'docs', 'prototype'));
 const SHOTS = path.join(OUT, 'screens');
 const BASE = '/PerformanceCapabilities/';
 const PORT = Number(process.env.E2E_PORT || 4323);
-const URL = `http://localhost:${PORT}${BASE}prototype/`;
+const URL = process.env.E2E_URL || `http://localhost:${PORT}${BASE}prototype/`;
+const STANDALONE = Boolean(process.env.E2E_URL);
 
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.mp3': 'audio/mpeg' };
 function serve() {
@@ -463,17 +468,17 @@ async function comparisons(browser) {
 
 (async () => {
   fs.mkdirSync(SHOTS, { recursive: true });
-  const server = await serve();
+  const server = STANDALONE ? null : await serve();
   const browser = await chromium.launch();
   try {
     await desktop(browser);
     await mobile(browser);
     await smallPhone(browser);
-    await mainGame(browser);
-    await comparisons(browser);
+    if (!STANDALONE) await mainGame(browser);
+    if (fs.existsSync(path.join(OUT, 'concept'))) await comparisons(browser);
   } finally {
     await browser.close();
-    server.close();
+    server?.close();
   }
   const failed = results.filter((r) => !r.ok);
   fs.writeFileSync(path.join(OUT, 'e2e.json'), JSON.stringify({ at: new Date().toISOString(), passed: results.length - failed.length, failed: failed.length, results, problems }, null, 2));

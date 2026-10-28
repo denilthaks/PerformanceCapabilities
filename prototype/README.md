@@ -3,11 +3,24 @@
 A playable vertical slice of the Ground floor (**The Front Gate**), built to the approved concept board in [`docs/prototype/concept/concept-board.jpg`](../docs/prototype/concept/concept-board.jpg). It runs as its own page at `prototype/` and leaves the main game untouched.
 
 ```sh
+npm ci
 npm run dev                 # http://localhost:5173/prototype/
-npm run build               # builds the game and the prototype into dist/
+npm run build               # builds the game and the prototype into dist/  (dist/prototype/)
+npm run build:standalone    # one self-contained file: dist-standalone/prototype-standalone.html
+npm run preview             # serves dist/ at http://localhost:4173/  (prototype at /prototype/)
+npm test                    # unit tests, including the prototype's save rules
 npm run e2e:prototype       # after a build: plays it in Chromium (desktop, phone, small phone),
                             # saves screenshots and the comparison sheets in docs/prototype/
 ```
+
+The end-to-end check needs Playwright with Chromium (`npm install --no-save playwright && npx playwright install chromium`). It can also test an unpacked download:
+
+```sh
+E2E_DIST=path/to/site E2E_OUT=/tmp/pc-e2e npm run e2e:prototype                          # a built site folder
+E2E_URL=file:///path/to/prototype-standalone.html E2E_OUT=/tmp/pc-e2e npm run e2e:prototype  # the single file
+```
+
+The single-file build opens straight from disk with a double-click. Browsers block module scripts on `file://`, so `dist/prototype/index.html` needs a local server instead. In the single file, "Full game" links to the GitHub repository, because there is no game beside it.
 
 Once merged to `main`, GitHub Pages serves it at `<site>/prototype/`. Nothing deploys from this branch.
 

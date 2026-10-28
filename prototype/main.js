@@ -21,6 +21,9 @@ import { PLAYER_LOOKS } from '../src/ui/looks';
 import { load, persist, recordFinish, resumeScreen, startFresh } from './state.js';
 
 const ROOM = ROOMS[SCENARIO.room];
+// Where the full game lives. Next to the prototype by default; the single-file
+// build (tools/build-standalone.mjs) points this elsewhere with a meta tag.
+const FULL_GAME = document.querySelector('meta[name="pc-full-game"]')?.content || '../';
 const ZONE = ZONES.find((z) => z.scenarioIds.includes(SCENARIO.id));
 const EXPLORE = exploreStages(SCENARIO)[0];
 const CTX = { flags: new Set() };
@@ -528,7 +531,7 @@ screens.complete = () => {
   <div class="tower card">
     <div class="obj-h">${ic('elevator', 14)} The Tower</div>
     ${floors}
-    <a class="btn sm full" href="../#/zone/${next.id}" id="elevator">Take the elevator to ${esc(next.floor)} ${ic('arrow', 13)}</a>
+    <a class="btn sm full" href="${esc(FULL_GAME === '../' ? `../#/zone/${next.id}` : FULL_GAME)}" id="elevator">Take the elevator to ${esc(next.floor)} ${ic('arrow', 13)}</a>
     <div class="tw-links"><button class="link" data-act="replay" id="replay">Play it differently</button><button class="link" data-act="go" data-to="title">Back to title</button></div>
   </div>
 </div>`;
