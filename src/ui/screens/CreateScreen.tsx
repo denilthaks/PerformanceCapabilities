@@ -5,7 +5,7 @@ import { useGame } from '../../app/game';
 import { navigate } from '../../app/router';
 import { AVATARS, MAX_NAME_LENGTH, cleanName } from '../../engine/progress-store';
 import { PLAYER_LOOKS, PlayerSprite } from '../sprites';
-import { VoiceInput } from '../VoiceInput';
+import { VoiceField } from '../VoiceInput';
 
 export function CreateScreen() {
   const { progress, createPlayer } = useGame();
@@ -32,16 +32,17 @@ export function CreateScreen() {
           <div className="pass-fields">
             <div className="field">
               <label htmlFor="char-name">Name on your pass</label>
-              <input
-                id="char-name"
-                value={name}
-                maxLength={MAX_NAME_LENGTH}
-                autoComplete="nickname"
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? 'char-name-error' : undefined}
-                onChange={(e) => { setName(e.target.value); setError(''); }}
-              />
-              <VoiceInput value={name} onChange={(v) => { setName(v); setError(''); }} mode="replace" maxLength={MAX_NAME_LENGTH} label="your name" />
+              <VoiceField value={name} onChange={(v) => { setName(v); setError(''); }} mode="replace" maxLength={MAX_NAME_LENGTH} label="your name">
+                <input
+                  id="char-name"
+                  value={name}
+                  maxLength={MAX_NAME_LENGTH}
+                  autoComplete="nickname"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? 'char-name-error' : undefined}
+                  onChange={(e) => { setName(e.target.value); setError(''); }}
+                />
+              </VoiceField>
               {error && <p id="char-name-error" className="error">{error}</p>}
             </div>
             <p className="pass-role">Role: <strong>Performance Lead</strong> (new)</p>

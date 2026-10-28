@@ -256,7 +256,7 @@
 .check.selected { border-color: var(--gold); background: rgba(240, 198, 106, 0.08); }
 .check input { margin-top: 4px; accent-color: var(--gold); width: 18px; height: 18px; flex: none; }
 .note-label { display: block; font-weight: 600; margin-bottom: 6px; }
-.notebook textarea { margin-bottom: 12px; background: #0d0b09; }
+.notebook textarea { background: #0d0b09; }
 
 /* ---- Debrief ---- */
 .debrief-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }

@@ -19,6 +19,7 @@ import { ZONES, zoneForScenario } from '../../content/zones';
 import { Icon, Link } from '../common';
 import { RoomStage, type Bubble } from '../RoomStage';
 import { AftermathPanel, DecisionPanel, ExplorePanel, NarrativePanel, ReflectionPanel, ReviewPanel } from './stages';
+import { SpeakerIcon } from '../VoiceInput';
 
 /** How the player would refer to someone: "Dana", or "Dr. Nwosu" for a titled name. */
 function shortName(id: string): string {
@@ -148,11 +149,12 @@ export function PlayScreen({ id }: { id: string }) {
           </button>
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
+            className={`round-btn mute-btn${progress.settings.sound || progress.settings.voice ? '' : ' muted'}`}
             aria-pressed={!(progress.settings.sound || progress.settings.voice)}
+            title={progress.settings.sound || progress.settings.voice ? 'Mute sound and voice' : 'Turn sound and voice back on'}
             onClick={() => { const on = !(progress.settings.sound || progress.settings.voice); game.updateSettings({ sound: on, voice: on }); }}
           >
-            {progress.settings.sound || progress.settings.voice ? '🔊' : '🔇'}<span className="visually-hidden">Mute sound and voice</span>
+            <SpeakerIcon muted={!(progress.settings.sound || progress.settings.voice)} /><span className="visually-hidden">Mute sound and voice</span>
           </button>
           <button type="button" className="btn btn-ghost btn-sm" disabled={index === 0} onClick={() => setRun(previousStage(scenario, run))}>
             <Icon name="back" size={16} />Back
