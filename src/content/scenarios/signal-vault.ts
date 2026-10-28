@@ -28,10 +28,10 @@ export const signalVault: Scenario = {
       id: 'brief',
       title: 'Floor 7',
       lines: [
-        { speaker: 'narrator', text: 'The elevator opens onto cold air and the hum of servers. On the holo screen, a red line climbs.' },
-        { speaker: 'narrator', text: 'Word travels fast in this building. Kai sent a message up: "Heard you\'re the one who listens."', when: { flag: 'front-gate:paired-practice' } },
-        { speaker: 'imani', text: 'Response times are up forty per cent in three weeks. It started the day Rafael joined.' },
-        { speaker: 'imani', text: 'I\'ve drafted a performance plan for him, and I want last year\'s speed script back. I need your sign-off today.' },
+        { speaker: 'narrator', text: 'The elevator doors open onto cold air and the steady hum of servers. On the big screen, a red line keeps climbing.' },
+        { speaker: 'narrator', text: 'News travels fast in this building. A message from Kai pops up on your phone: "Heard you\'re the one who actually listens."', when: { flag: 'front-gate:paired-practice' } },
+        { speaker: 'imani', text: 'Thanks for coming down. Our response times are up forty per cent in three weeks, and it started the day Rafael joined.' },
+        { speaker: 'imani', text: 'I\'ve drafted a performance plan for him, and I\'d like to bring back last year\'s speed script. I just need you to sign it off today.' },
       ],
     },
     {
@@ -45,9 +45,9 @@ export const signalVault: Scenario = {
           id: 'imani', label: 'Imani', kind: 'character', characterId: 'imani', x: 360, y: 174,
           summary: 'Imani ties the rise to Rafael\'s arrival and wants the fix that worked last year.',
           lines: [
-            { speaker: 'imani', text: 'Five years running this floor. When numbers move, it\'s one person or one process.' },
-            { speaker: 'player', text: 'What else changed three weeks ago?' },
-            { speaker: 'imani', text: 'Nothing that matters. Rafael started. That\'s the change.' },
+            { speaker: 'imani', text: 'I\'ve run this floor for five years. When the numbers move, it\'s usually one person or one process.' },
+            { speaker: 'player', text: 'Did anything else change around three weeks ago?' },
+            { speaker: 'imani', text: 'Nothing important. Rafael started, and that\'s the change.' },
           ],
         },
         {
@@ -63,18 +63,18 @@ export const signalVault: Scenario = {
           id: 'rafael', label: 'Rafael', kind: 'character', characterId: 'rafael', x: 240, y: 266,
           summary: 'Rafael says his queue is full of the hardest cases, and that nobody here asks for help.',
           lines: [
-            { speaker: 'rafael', text: 'I know what my number looks like.' },
-            { speaker: 'rafael', text: 'Most of what lands in my queue is the gnarly stuff: outages, corrupted data. I try to solve it myself.' },
-            { speaker: 'player', text: 'Why not escalate?' },
-            { speaker: 'rafael', text: 'Nobody does. I asked once and got a look. So I don\'t.' },
+            { speaker: 'rafael', text: 'I know my numbers look bad. You don\'t have to tell me.' },
+            { speaker: 'rafael', text: 'Most of what lands in my queue is the really nasty stuff. Outages, broken data, that kind of thing. I try to fix it all myself.' },
+            { speaker: 'player', text: 'Why not pass the hard ones up to someone senior?' },
+            { speaker: 'rafael', text: 'Nobody does that here. I asked for help once and got a funny look, so now I don\'t.' },
           ],
         },
         {
           id: 'odette', label: 'Odette', kind: 'character', characterId: 'odette', x: 120, y: 170,
           summary: 'Odette thinks new people need to toughen up, and wants the old script back.',
           lines: [
-            { speaker: 'odette', text: 'When I started, nobody held my hand. You figure it out or you don\'t.' },
-            { speaker: 'odette', text: 'The script worked last year. Bring it back, everyone speeds up, done.' },
+            { speaker: 'odette', text: 'When I started, nobody held my hand. You either figure it out or you don\'t.' },
+            { speaker: 'odette', text: 'That script worked last year. Bring it back, everyone speeds up, problem solved.' },
           ],
         },
         {
@@ -82,8 +82,8 @@ export const signalVault: Scenario = {
           summary: 'A figure at the end of the row hands you the founder\'s second memo.',
           lines: [
             { speaker: 'watcher', text: '...' },
-            { speaker: 'watcher', text: 'Every new lead comes down here and asks who\'s slow. Nobody asks what changed.' },
-            { speaker: 'narrator', text: 'They press a folded card into your hand. "Founder\'s memo, no. 2: We measured the people. We never measured the pipes."' },
+            { speaker: 'watcher', text: 'Every new lead comes down here and asks who is slow. Nobody ever asks what changed.' },
+            { speaker: 'narrator', text: 'They press a folded card into your hand. It reads: "Founder\'s memo, number two. We measured the people. We never measured the pipes."' },
           ],
         },
       ],
@@ -93,7 +93,7 @@ export const signalVault: Scenario = {
       id: 'first-call',
       title: 'First call',
       asker: 'imani',
-      prompt: 'Well? I\'m breaching target every hour we stand here.',
+      prompt: 'So, what do you think? We miss our target every hour we stand here talking.',
       evidenceFrom: ['first-look'],
       options: [
         {
@@ -105,7 +105,7 @@ export const signalVault: Scenario = {
             headline: 'Decisive. Is it right?',
             narrative: ['The plan is issued that afternoon. Imani looks relieved to have done something.'],
             reactions: [
-              { characterId: 'imani', mood: 'relieved', text: 'Good. Now we\'ll see movement.' },
+              { characterId: 'imani', mood: 'relieved', text: 'Good. Now we should start to see some movement.' },
               { characterId: 'rafael', mood: 'withdrawn', text: 'Understood.' },
             ],
             effects: { trust: -2, wellbeing: -2 },
@@ -121,15 +121,15 @@ export const signalVault: Scenario = {
         },
         {
           id: 'script',
-          label: '"Bring back last year\'s speed script for everyone."',
+          label: '"Bring back last year\'s speed script for the whole team."',
           quality: 'weak',
           rubric: { diagnosis: 0, impact: 1 },
           outcome: {
             headline: 'The familiar fix.',
             narrative: ['The script is back by evening. The easy tickets close faster almost at once.'],
             reactions: [
-              { characterId: 'odette', mood: 'relieved', text: 'Told you. Old tricks.' },
-              { characterId: 'rafael', mood: 'concerned', text: 'The script doesn\'t cover anything I get.' },
+              { characterId: 'odette', mood: 'relieved', text: 'See? I told you. The old tricks still work.' },
+              { characterId: 'rafael', mood: 'concerned', text: 'The script doesn\'t cover any of the tickets I get.' },
             ],
             effects: { output: 1, quality: -1 },
             later: [
@@ -144,7 +144,7 @@ export const signalVault: Scenario = {
         },
         {
           id: 'probe',
-          label: '"Give me a week. Pull the ticket-level data, and let\'s find out what changed three weeks ago."',
+          label: '"Give me one week. Let\'s pull the ticket data and find out what changed three weeks ago."',
           quality: 'strong',
           rubric: { diagnosis: 2, impact: 2 },
           unlockedBy: ['rafael'],
@@ -152,8 +152,8 @@ export const signalVault: Scenario = {
             headline: 'A small step you can undo.',
             narrative: ['You hold the big decision and ask for the raw ticket data.'],
             reactions: [
-              { characterId: 'imani', mood: 'frustrated', text: 'A week? We\'re breaching every hour.' },
-              { characterId: 'rafael', mood: 'encouraged', text: 'Thanks for asking about the tickets, not just the clock.' },
+              { characterId: 'imani', mood: 'frustrated', text: 'A whole week? We\'re missing our target every hour.' },
+              { characterId: 'rafael', mood: 'encouraged', text: 'Thank you for asking about the tickets, and not just the clock.' },
             ],
             effects: { trust: 1 },
             later: [
@@ -168,13 +168,13 @@ export const signalVault: Scenario = {
         },
         {
           id: 'wait',
-          label: '"Leave it. New starters always take time."',
+          label: '"Leave it for now. New starters always take a while."',
           quality: 'weak',
           rubric: { diagnosis: 0, impact: 0 },
           outcome: {
             headline: 'Waiting is also a decision.',
             narrative: ['Imani is not impressed.'],
-            reactions: [{ characterId: 'imani', mood: 'frustrated', text: 'Time is exactly what I don\'t have.' }],
+            reactions: [{ characterId: 'imani', mood: 'frustrated', text: 'Time is the one thing I don\'t have.' }],
             effects: { trust: -1 },
             later: ['Response times have climbed again. Rafael is exhausted.'],
             laterEffects: { output: -1, wellbeing: -2 },
@@ -221,17 +221,17 @@ export const signalVault: Scenario = {
           id: 'imani-2', label: 'Imani', kind: 'character', characterId: 'imani', x: 360, y: 174, revealAfter: 'first-call',
           summary: 'Imani set up the routing rule to stretch new people, and hadn\'t connected it to the numbers.',
           lines: [
-            { speaker: 'imani', text: 'That routing rule was mine. I wanted new people stretched early. It\'s how I grew.', when: { inspected: 'routing-log' } },
-            { speaker: 'imani', text: 'You\'ve been looking at the logs. Go on, say it.', when: { notInspected: 'routing-log' } },
-            { speaker: 'imani', text: 'I was looking at who. Not at what changed.' },
+            { speaker: 'imani', text: 'That routing rule was my idea. I wanted new people to be stretched early. That\'s how I learned.', when: { inspected: 'routing-log' } },
+            { speaker: 'imani', text: 'You\'ve been looking at the logs, haven\'t you? Go on, you can say it.', when: { notInspected: 'routing-log' } },
+            { speaker: 'imani', text: 'I was so busy looking at who, I never looked at what had changed.' },
           ],
         },
         {
           id: 'odette-2', label: 'Odette', kind: 'character', characterId: 'odette', x: 120, y: 170, revealAfter: 'first-call',
           summary: 'Odette admits that asking for help is seen as weakness here, and that she ground through hard cases alone for years.',
           lines: [
-            { speaker: 'odette', text: 'Asking for help down here is seen as weakness. Always has been.' },
-            { speaker: 'odette', text: 'I spent years grinding through the worst tickets alone. Maybe that\'s nothing to be proud of.' },
+            { speaker: 'odette', text: 'Down here, asking for help is seen as a weakness. It always has been.' },
+            { speaker: 'odette', text: 'I spent years grinding through the worst tickets on my own. Maybe that\'s not something to be proud of.' },
           ],
         },
       ],
@@ -241,20 +241,20 @@ export const signalVault: Scenario = {
       id: 'revised',
       title: 'Second chance',
       asker: 'imani',
-      prompt: 'All right. You\'ve seen what I missed. What now?',
+      prompt: 'All right. You\'ve seen what I missed. So what do we do now?',
       evidenceFrom: ['first-look', 'second-look'],
       options: [
         {
           id: 'revert',
-          label: '"Switch the routing rule off and move on."',
+          label: '"Switch the routing rule off, and let\'s move on."',
           quality: 'mixed',
           rubric: { diagnosis: 1, development: 0, impact: 1 },
           outcome: {
             headline: 'Fast recovery. Lost intent.',
             narrative: ['Times recover within days. The idea of stretching new people quietly disappears, and nobody talks about asking for help.'],
             reactions: [
-              { characterId: 'imani', mood: 'relieved', text: 'Numbers are back. Let\'s not overthink it.' },
-              { characterId: 'rafael', mood: 'neutral', text: 'Easier, sure. Not sure I\'m learning anything now.' },
+              { characterId: 'imani', mood: 'relieved', text: 'The numbers are back to normal. Let\'s not overthink it.' },
+              { characterId: 'rafael', mood: 'neutral', text: 'It\'s easier, sure. I\'m just not sure I\'m learning anything now.' },
             ],
             effects: { output: 2, trust: 1 },
           },
@@ -264,7 +264,7 @@ export const signalVault: Scenario = {
         },
         {
           id: 'redesign',
-          label: '"Keep the stretch, change the how: pair new analysts with a senior on their first hard tickets, make escalating normal, and review it with the team in two weeks."',
+          label: '"Keep stretching new people, but change how. Pair them with a senior on their first hard tickets, make asking for help normal, and let\'s review it with the team in two weeks."',
           quality: 'strong',
           rubric: { diagnosis: 2, development: 2, impact: 2 },
           unlockedBy: ['odette-2', 'rafael'],
@@ -275,9 +275,9 @@ export const signalVault: Scenario = {
               'Escalations go from none to a dozen a week. Within three weeks, the red line drops under target.',
             ],
             reactions: [
-              { characterId: 'imani', mood: 'encouraged', text: 'I was right that people need stretching. Wrong that they need to be alone for it.' },
-              { characterId: 'odette', mood: 'encouraged', text: 'Turns out I quite like being asked.' },
-              { characterId: 'rafael', mood: 'encouraged', text: 'Still getting the hard ones. Now I\'m learning from them.' },
+              { characterId: 'imani', mood: 'encouraged', text: 'I was right that people need a stretch. I was wrong that they need to be alone for it.' },
+              { characterId: 'odette', mood: 'encouraged', text: 'Do you know what? It turns out I quite like being asked.' },
+              { characterId: 'rafael', mood: 'encouraged', text: 'I\'m still getting the hard ones. The difference is, now I\'m learning from them.' },
             ],
             effects: { output: 3, quality: 2, trust: 2, wellbeing: 3 },
           },
@@ -287,13 +287,13 @@ export const signalVault: Scenario = {
         },
         {
           id: 'course',
-          label: '"Keep the rule, and send Rafael on an advanced troubleshooting course."',
+          label: '"Keep the rule, and send Rafael on an advanced training course."',
           quality: 'weak',
           rubric: { diagnosis: 1, development: 1, impact: 0 },
           outcome: {
             headline: 'Certified. Still alone.',
             narrative: ['Rafael comes back with a certificate and the same queue. Times improve a little, then stall.'],
-            reactions: [{ characterId: 'rafael', mood: 'frustrated', text: 'The course was good. I still can\'t ask anyone when I\'m stuck.' }],
+            reactions: [{ characterId: 'rafael', mood: 'frustrated', text: 'The course was good. But I still can\'t ask anyone when I\'m stuck.' }],
             effects: { wellbeing: -1 },
           },
           feedback: 'You saw that Rafael lacked experience with hard tickets. But a course answers that with more information and leaves the routing, and the no-help habit, exactly where they were.',
@@ -302,15 +302,15 @@ export const signalVault: Scenario = {
         },
         {
           id: 'shield',
-          label: '"Move Rafael to easy tickets only, until he\'s more experienced."',
+          label: '"Give Rafael only the easy tickets until he has more experience."',
           quality: 'mixed',
           rubric: { diagnosis: 1, development: 0, impact: 1 },
           outcome: {
             headline: 'Protected, and parked.',
             narrative: ['Rafael\'s numbers improve. The hard tickets move to the next-newest analyst, whose numbers start to climb.'],
             reactions: [
-              { characterId: 'rafael', mood: 'neutral', text: 'Calmer. Not sure how I\'ll ever learn, though.' },
-              { characterId: 'odette', mood: 'concerned', text: 'So now it\'s Hamid\'s turn to drown.' },
+              { characterId: 'rafael', mood: 'neutral', text: 'It\'s calmer. I\'m just not sure how I\'ll ever learn.' },
+              { characterId: 'odette', mood: 'concerned', text: 'So now it\'s Hamid\'s turn to drown. Great.' },
             ],
             effects: { output: 1, wellbeing: 1 },
           },
