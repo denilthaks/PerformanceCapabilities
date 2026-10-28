@@ -1,8 +1,9 @@
-// Spoken dialogue through the browser's built-in text-to-speech (Web Speech
-// API). Each character gets a consistent voice: one of the device's best
-// English voices, at a natural pitch. Quality still depends on the device's
-// voices; recorded audio would be needed for truly natural speech. If the
-// browser has no speech support, the game is silent and otherwise unchanged.
+// Spoken dialogue. Lines with a recorded voice file (generated ahead of time
+// with ElevenLabs by tools/generate-voices.ts) play that file; any other line
+// falls back to the device's built-in text-to-speech, using its best English
+// voice at a natural pitch. No API key is ever needed in the browser.
+
+import { speechText, voiceKey } from './voice-lines';
 
 let enabled = true;
 let voices: SpeechSynthesisVoice[] = [];
@@ -67,13 +68,70 @@ function profile(speaker: string): { voice?: SpeechSynthesisVoice; pitch: number
 }
 
 function utterance(text: string, speaker: string): SpeechSynthesisUtterance {
-  // Stage directions in brackets aren't spoken.
-  const u = new SpeechSynthesisUtterance(text.replace(/\([^)]*\)/g, '').replace(/[“”"]/g, '').trim());
+  const u = new SpeechSynthesisUtterance(speechText(text));
   const p = profile(speaker);
   if (p.voice) u.voice = p.voice;
   u.pitch = p.pitch;
   u.rate = p.rate;
   return u;
+}
+
+// ---- Recorded voices (ElevenLabs, generated ahead of time) ----
+
+let manifest: Record<string, string> | null = null;
+let manifestLoad: Promise<void> | null = null;
+
+function loadManifest(): Promise<void> {
+  manifestLoad ??= fetch('./voice/manifest.json')
+    .then((r) => (r.ok ? r.json() : { files: {} }))
+    .then((m: { files?: Record<string, string> }) => { manifest = m.files ?? {}; })
+    .catch(() => { manifest = {}; });
+  return manifestLoad;
+}
+
+/** Whether any recorded voice files are available (after the manifest loads). */
+export function recordedVoices(): number {
+  return manifest ? Object.keys(manifest).length : 0;
+}
+
+// One queue for both kinds of speech, so recorded and device lines can mix.
+let queue: { text: string; speaker: string }[] = [];
+let audio: HTMLAudioElement | null = null;
+let generation = 0;
+
+function next(gen: number) {
+  if (gen !== generation) return;
+  const item = queue.shift();
+  if (!item) return;
+  const file = manifest?.[voiceKey(item.speaker, item.text)];
+  if (file) {
+    audio = new Audio(`./voice/${file}`);
+    audio.onended = () => next(gen);
+    audio.onerror = () => { audio = null; deviceSpeak(item, gen); };
+    audio.play().catch(() => { audio = null; deviceSpeak(item, gen); });
+    return;
+  }
+  deviceSpeak(item, gen);
+}
+
+/**
+ * Speak with the device voice: this line and any following lines that have
+ * no recording go to the browser's own queue together (some phones don't
+ * report when an utterance ends, which would otherwise stall the queue).
+ */
+function deviceSpeak(item: { text: string; speaker: string }, gen: number) {
+  const batch = [item];
+  while (queue.length && !manifest?.[voiceKey(queue[0].speaker, queue[0].text)]) batch.push(queue.shift()!);
+  if (!supported) { next(gen); return; }
+  try {
+    batch.forEach((b, i) => {
+      const u = utterance(b.text, b.speaker);
+      if (i === batch.length - 1) { u.onend = () => next(gen); u.onerror = () => next(gen); }
+      window.speechSynthesis.speak(u);
+    });
+  } catch {
+    next(gen);
+  }
 }
 
 /** Speak one line, interrupting anything already being said. */
@@ -83,16 +141,35 @@ export function speak(text: string, speaker: string) {
 
 /** Speak several lines in order (e.g. everyone's reactions). */
 export function speakAll(lines: { text: string; speaker: string }[]) {
-  if (!supported || !enabled || !lines.length) return;
-  try {
-    window.speechSynthesis.cancel();
-    for (const l of lines) if (l.text.trim()) window.speechSynthesis.speak(utterance(l.text, l.speaker));
-  } catch {
-    /* speech is a nice-to-have */
-  }
+  if (!enabled) return;
+  stopSpeaking();
+  queue = lines.filter((l) => speechText(l.text));
+  if (!queue.length) return;
+  const gen = generation;
+  if (manifest) next(gen);
+  else void loadManifest().then(() => next(gen));
 }
 
 export function stopSpeaking() {
-  if (!supported) return;
-  try { window.speechSynthesis.cancel(); } catch { /* nothing to stop */ }
+  generation++;
+  queue = [];
+  if (audio) { audio.pause(); audio.onended = null; audio = null; }
+  if (supported) {
+    try { window.speechSynthesis.cancel(); } catch { /* nothing to stop */ }
+  }
+}
+
+/**
+ * Read the player's own words back to them with the device voice. Runs even
+ * when voice-over is off, because the player asked for it. Returns false if
+ * this browser can't speak.
+ */
+export function readAloud(text: string, onDone?: () => void): boolean {
+  stopSpeaking();
+  if (!supported || !speechText(text)) return false;
+  const u = utterance(text, 'player');
+  u.onend = () => onDone?.();
+  u.onerror = () => onDone?.();
+  window.speechSynthesis.speak(u);
+  return true;
 }

@@ -197,6 +197,12 @@ const checks = [
     await page.waitForSelector('#char-name');
     await page.click('button[type=submit]');
     expect(await page.locator('#char-name-error').count() === 1, 'empty name error');
+    // Voice typing: the red mic fills the field as you speak, and read-back speaks it.
+    await page.click('.mic-btn', { force: true });
+    await page.waitForFunction(() => document.querySelector('#char-name').value === 'Ada Lovelace');
+    await page.waitForSelector('.voice-input:not(.listening)');
+    await page.click('.read-btn', { force: true });
+    expect(await page.evaluate(() => window.__spoken.includes('Ada Lovelace')), 'read-back speaks the name');
     await page.fill('#char-name', 'Ada');
     await page.click('.avatar-option:nth-child(2)');
     await shot(page, '02-pass');
@@ -400,6 +406,21 @@ async function runSuite(browser, list, contextOpts, label) {
       const orig = AC.prototype.createOscillator;
       AC.prototype.createOscillator = function (...a) { window.__tones++; return orig.apply(this, a); };
     }
+    // A stand-in recogniser: "hears" a name, in two steps like the real thing.
+    window.SpeechRecognition = window.webkitSpeechRecognition = class {
+      start() {
+        const fire = (text, isFinal) => {
+          const r = [{ transcript: text }]; r.isFinal = isFinal;
+          this.onresult?.({ resultIndex: 0, results: [r] });
+        };
+        setTimeout(() => fire('Ada', false), 50);
+        setTimeout(() => fire('Ada Lovelace.', true), 120);
+        setTimeout(() => this.onend?.(), 180);
+      }
+      stop() { this.onend?.(); }
+      abort() {}
+    };
+    if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia = () => Promise.reject(new Error('no mic in tests'));
     if (window.speechSynthesis) {
       const speak = window.speechSynthesis.speak.bind(window.speechSynthesis);
       window.speechSynthesis.speak = (u) => { window.__spoken.push(u.text); try { speak(u); } catch { /* headless */ } };

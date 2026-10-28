@@ -40,9 +40,9 @@ export const topFloor: Scenario = {
       id: 'alarm',
       title: 'Floor 40',
       lines: [
-        { speaker: 'narrator', text: 'The suite is silent except for the clock. A red light pulses on Sol\'s desk: payments, down.' },
-        { speaker: 'sol', text: 'Our biggest client\'s payment platform has been down for twenty minutes. Their CTO is sitting right there.' },
-        { speaker: 'sol', text: 'Mira\'s on call. First rotation. The board call is in an hour. Get us back up.' },
+        { speaker: 'narrator', text: 'The top floor is silent, apart from the ticking clock. A red light pulses on Sol\'s desk. The payment system is down.' },
+        { speaker: 'sol', text: 'Thank you for coming up. Our biggest client\'s payment system has been down for twenty minutes, and their technology chief is sitting right there.' },
+        { speaker: 'sol', text: 'Mira is on call tonight. It\'s her very first time. The board call is in an hour, so please, get us back up.' },
       ],
     },
     {
@@ -56,8 +56,8 @@ export const topFloor: Scenario = {
           id: 'mira', label: 'Mira', kind: 'character', characterId: 'mira', x: 132, y: 166,
           summary: 'Mira has read the failover runbook three times, and has never performed a failover.',
           lines: [
-            { speaker: 'mira', text: 'I know the runbook. I\'ve read it three times.' },
-            { speaker: 'mira', text: 'I\'ve never actually done a failover. Not even a drill. What if I make it worse?' },
+            { speaker: 'mira', text: 'I know the instructions. I\'ve read them three times.' },
+            { speaker: 'mira', text: 'But I\'ve never actually done a failover. Not even in practice. What if I make it worse?' },
           ],
         },
         {
@@ -73,8 +73,8 @@ export const topFloor: Scenario = {
           id: 'kai', label: 'Desk phone', kind: 'character', characterId: 'kai', x: 226, y: 140, icon: 'call', when: { flag: KAI },
           summary: 'Kai, who now runs hands-on practice for the Tower\'s on-call staff, offers to talk Mira through it live.',
           lines: [
-            { speaker: 'kai', text: 'It\'s Kai, from the lobby. Well, not just the lobby now. I run the practice sessions.' },
-            { speaker: 'kai', text: 'I\'ve been where Mira is: knew the steps, never done it. Put me on speaker. She\'ll be slower than a senior today, and faster than anyone next time.' },
+            { speaker: 'kai', text: 'Hi, it\'s Kai, from the lobby. Well, not just the lobby any more. I run the practice sessions now.' },
+            { speaker: 'kai', text: 'I\'ve been exactly where Mira is. I knew the steps, but I\'d never done it. Put me on speaker. She\'ll be a bit slower than a senior today, and faster than anyone next time.' },
           ],
         },
         {
@@ -93,20 +93,20 @@ export const topFloor: Scenario = {
       id: 'stabilise',
       title: 'Stabilise',
       asker: 'sol',
-      prompt: 'Clock\'s running. How do we get back up?',
+      prompt: 'The clock is running. How do we get back up?',
       evidenceFrom: ['phase-1'],
       options: [
         {
           id: 'take-over',
-          label: '"Get the most senior engineer on the line and have them run it. Mira watches."',
+          label: '"Get our most senior engineer on the line to fix it. Mira can watch."',
           quality: 'mixed',
           rubric: { diagnosis: 1, development: 0, impact: 1 },
           outcome: {
             headline: 'Back up in twenty minutes.',
             narrative: ['The senior engineer works around the broken steps from memory. Service returns. Mira watches from the side.'],
             reactions: [
-              { characterId: 'mira', mood: 'withdrawn', text: 'I guess I\'m not ready for on-call.' },
-              { characterId: 'sol', mood: 'relieved', text: 'Good. Next.' },
+              { characterId: 'mira', mood: 'withdrawn', text: 'I guess I\'m just not ready for this.' },
+              { characterId: 'sol', mood: 'relieved', text: 'Good. What\'s next?' },
             ],
             effects: { output: 5, wellbeing: -1 },
           },
@@ -115,7 +115,7 @@ export const topFloor: Scenario = {
         },
         {
           id: 'guided',
-          label: '"Mira runs it, with someone experienced guiding her live. Fix the runbook as you go."',
+          label: '"Mira fixes it herself, with someone experienced guiding her. And we correct the instructions as we go."',
           quality: 'strong',
           rubric: { diagnosis: 2, development: 2, impact: 2 },
           unlockedBy: ['kai', 'drill-log'],
@@ -126,9 +126,9 @@ export const topFloor: Scenario = {
               'Service returns ten minutes later than the fastest option.',
             ],
             reactions: [
-              { characterId: 'mira', mood: 'encouraged', text: 'I did it. And the runbook\'s right now.' },
-              { characterId: 'kai', mood: 'encouraged', text: 'That\'s how I learned too.', when: { flag: KAI } },
-              { characterId: 'sol', mood: 'neutral', text: 'Ten minutes slower. Fine, if it means we\'re never here again.' },
+              { characterId: 'mira', mood: 'encouraged', text: 'I did it! And the instructions are right now, too.' },
+              { characterId: 'kai', mood: 'encouraged', text: 'That\'s exactly how I learned.', when: { flag: KAI } },
+              { characterId: 'sol', mood: 'neutral', text: 'It took ten minutes longer. That\'s fine, if it means we\'re never in this mess again.' },
             ],
             effects: { output: 4, capability: 3, quality: 1 },
           },
@@ -138,15 +138,15 @@ export const topFloor: Scenario = {
         },
         {
           id: 'wait-vendor',
-          label: '"Don\'t touch anything until the vendor\'s support team responds."',
+          label: '"Don\'t touch anything until the supplier\'s support team gets back to us."',
           quality: 'weak',
           rubric: { diagnosis: 0, development: 0, impact: 0 },
           outcome: {
             headline: 'Forty minutes of nothing.',
             narrative: ['The vendor replies after forty minutes: their systems are healthy. The board call is now twenty minutes away.'],
             reactions: [
-              { characterId: 'sol', mood: 'frustrated', text: 'We had people who could have acted.' },
-              { characterId: 'adaeze', mood: 'concerned', text: 'Is anyone actually fixing this?' },
+              { characterId: 'sol', mood: 'frustrated', text: 'We had people right here who could have fixed it.' },
+              { characterId: 'adaeze', mood: 'concerned', text: 'Excuse me. Is anyone actually fixing this?' },
             ],
             effects: { output: 2, trust: -2 },
           },
@@ -184,7 +184,7 @@ export const topFloor: Scenario = {
           id: 'sol-2', label: 'Sol', kind: 'character', characterId: 'sol', x: 240, y: 124,
           summary: 'Leadership has already told the client it was the vendor. Sol is under pressure to keep that story.',
           lines: [
-            { speaker: 'sol', text: 'The board already told the client it was the vendor. Walking that back will hurt.' },
+            { speaker: 'sol', text: 'The board has already told the client it was the supplier\'s fault. Taking that back will be painful.' },
             { speaker: 'sol', text: 'Whatever you find, I need to know before the call.' },
           ],
         },
@@ -192,16 +192,16 @@ export const topFloor: Scenario = {
           id: 'bex', label: 'Bex', kind: 'character', characterId: 'bex', x: 432, y: 138,
           summary: 'Bex wants the vendor story kept intact, for the company\'s sake.',
           lines: [
-            { speaker: 'bex', text: 'The vendor statement is out. It\'s clean. It protects us.' },
-            { speaker: 'bex', text: 'If you\'re about to make that messier, think very carefully.' },
+            { speaker: 'bex', text: 'The statement blaming the supplier has gone out. It\'s clean, and it protects us.' },
+            { speaker: 'bex', text: 'If you\'re about to make that messier, please think very carefully.' },
           ],
         },
         {
           id: 'rafael', label: 'Desk phone', kind: 'character', characterId: 'rafael', x: 226, y: 140, icon: 'call', when: { flag: RAFAEL },
           summary: 'Rafael, from the Vault, says the tickets show customer errors starting two minutes after the internal change, before the vendor\'s problems.',
           lines: [
-            { speaker: 'rafael', text: 'Rafael, Floor 7. We escalate early now, so the tickets were tagged within minutes.' },
-            { speaker: 'rafael', text: 'First customer errors: two minutes after the connection-pool deploy. Before the vendor\'s status changed.' },
+            { speaker: 'rafael', text: 'Hi, it\'s Rafael, from Floor 7. We flag problems early now, so the tickets were sorted within minutes.' },
+            { speaker: 'rafael', text: 'The first customer errors came two minutes after our own update went live. That was before the supplier had any problems.' },
           ],
         },
         {
@@ -229,20 +229,20 @@ export const topFloor: Scenario = {
       id: 'cause',
       title: 'The cause',
       asker: 'sol',
-      prompt: 'Board call in twenty minutes. What do we say caused this?',
+      prompt: 'The board call is in twenty minutes. What do we tell them caused this?',
       evidenceFrom: ['phase-2'],
       options: [
         {
           id: 'blame-vendor',
-          label: '"Stick with the vendor explanation."',
+          label: '"Stick with the story that it was the supplier."',
           quality: 'weak',
           rubric: { diagnosis: 0, impact: 0 },
           outcome: {
             headline: 'The story holds. For a week.',
             narrative: ['The call goes smoothly. A week later the vendor publishes a timeline showing the outage began before their incident.'],
             reactions: [
-              { characterId: 'bex', mood: 'relieved', text: 'Clean.' },
-              { characterId: 'adaeze', mood: 'frustrated', text: '(A week later, by email) We found out from your vendor. That\'s the worst way.' },
+              { characterId: 'bex', mood: 'relieved', text: 'Good. Clean and simple.' },
+              { characterId: 'adaeze', mood: 'frustrated', text: '(A week later, by email) We found out the truth from your supplier. That\'s the worst possible way.' },
             ],
             effects: { trust: -3 },
           },
@@ -251,13 +251,13 @@ export const topFloor: Scenario = {
         },
         {
           id: 'quiet-rollback',
-          label: '"Roll back the change quietly, but keep the vendor story."',
+          label: '"Quietly undo our update, but keep blaming the supplier."',
           quality: 'mixed',
           rubric: { diagnosis: 2, impact: 0 },
           outcome: {
             headline: 'Fixed. Hidden.',
             narrative: ['The rollback stops the last errors. The skipped review is never mentioned again.'],
-            reactions: [{ characterId: 'sol', mood: 'concerned', text: 'We fixed it. I\'m not comfortable with how.' }],
+            reactions: [{ characterId: 'sol', mood: 'concerned', text: 'We fixed it. I\'m just not comfortable with how.' }],
             effects: { quality: 1, trust: -1 },
           },
           feedback: 'Your diagnosis was right. But hiding it leaves the process that let an unreviewed change through untouched, and the relationship now depends on nobody finding out.',
@@ -265,7 +265,7 @@ export const topFloor: Scenario = {
         },
         {
           id: 'correct-record',
-          label: '"Roll it back, and tell the board and the client the truth: it was us, and here\'s what changes."',
+          label: '"Undo the update, and tell the board and the client the truth. It was us, and here\'s what we\'ll change."',
           quality: 'strong',
           rubric: { diagnosis: 2, impact: 2 },
           unlockedBy: ['sol-2', 'bex'],
@@ -273,9 +273,9 @@ export const topFloor: Scenario = {
             headline: 'An uncomfortable call. A stronger relationship.',
             narrative: ['Sol tells the board, who are not happy, and then turns to the client.'],
             reactions: [
-              { characterId: 'adaeze', mood: 'encouraged', text: 'First supplier who\'s told me their own root cause before I found it.' },
-              { characterId: 'sol', mood: 'encouraged', text: 'Hardest call I\'ve made this year. Probably the best one.' },
-              { characterId: 'bex', mood: 'concerned', text: 'Well. That\'s a new statement to write.' },
+              { characterId: 'adaeze', mood: 'encouraged', text: 'You\'re the first supplier who has ever told me your own mistake before I found it. Thank you.' },
+              { characterId: 'sol', mood: 'encouraged', text: 'That was the hardest call I\'ve made all year. Probably the best one, too.' },
+              { characterId: 'bex', mood: 'concerned', text: 'Well. I suppose I\'ll be writing a new statement, then.' },
             ],
             effects: { quality: 2, trust: 2 },
           },
@@ -285,13 +285,13 @@ export const topFloor: Scenario = {
         },
         {
           id: 'keep-investigating',
-          label: '"Keep investigating both causes before saying anything."',
+          label: '"Let\'s keep looking into both causes before we say anything."',
           quality: 'mixed',
           rubric: { diagnosis: 1, impact: 0 },
           outcome: {
             headline: 'Thorough. Late.',
             narrative: ['The investigation confirms the change, but only after the board call, where Sol had nothing new to say.'],
-            reactions: [{ characterId: 'sol', mood: 'frustrated', text: 'We had the change log an hour ago.' }],
+            reactions: [{ characterId: 'sol', mood: 'frustrated', text: 'We had the update log in our hands an hour ago.' }],
             effects: { trust: -1, quality: 1 },
           },
           feedback: 'More evidence is often right. Here the change log already pointed clearly at one cause, and waiting had a price. Knowing when you have enough to act is part of the skill.',
@@ -310,8 +310,8 @@ export const topFloor: Scenario = {
           id: 'adaeze', label: 'Dr. Nwosu', kind: 'character', characterId: 'adaeze', x: 284, y: 172,
           summary: 'The client wants a dedicated team on call around the clock for three months, or she\'ll review the contract.',
           lines: [
-            { speaker: 'adaeze', text: 'I need to know this won\'t happen again.' },
-            { speaker: 'adaeze', text: 'A dedicated team, on call around the clock, for three months. Otherwise I take this to my board.' },
+            { speaker: 'adaeze', text: 'Good evening. I need to know this won\'t happen again.' },
+            { speaker: 'adaeze', text: 'I\'d like a dedicated team on call, day and night, for three months. Otherwise, I\'ll have to take this to my board.' },
           ],
         },
         {
@@ -327,14 +327,14 @@ export const topFloor: Scenario = {
           id: 'mira-3', label: 'Mira', kind: 'character', characterId: 'mira', x: 132, y: 166,
           summary: 'Mira says the on-call team can\'t sustain round-the-clock cover on its own.',
           lines: [
-            { speaker: 'mira', text: 'Three months of 24/7 with five of us? We\'ll be the next outage.' },
+            { speaker: 'mira', text: 'Three months, day and night, with only five of us? We\'ll be the cause of the next outage.' },
           ],
         },
         {
           id: 'priya', label: 'Desk phone', kind: 'character', characterId: 'priya', x: 226, y: 140, icon: 'call', when: { flag: PRIYA },
           summary: 'Priya offers two Meridian engineers for a month, using the shared rota built during the launch.',
           lines: [
-            { speaker: 'priya', text: 'Priya, Floor 23. We built a shared rota for Meridian. I can lend you two engineers for a month.' },
+            { speaker: 'priya', text: 'Hello, it\'s Priya, from Floor 23. We built a shared rota for the Meridian launch. I can lend you two engineers for a month.' },
             { speaker: 'priya', text: 'Just don\'t promise anything that only works if your people stop sleeping.' },
           ],
         },
@@ -354,20 +354,20 @@ export const topFloor: Scenario = {
       id: 'commit',
       title: 'The commitment',
       asker: 'adaeze',
-      prompt: 'So. What are you committing to?',
+      prompt: 'So. What exactly are you committing to?',
       evidenceFrom: ['phase-3'],
       options: [
         {
           id: 'promise-all',
-          label: '"A dedicated 24/7 team for three months, starting tonight."',
+          label: '"A dedicated team, day and night, for three months, starting tonight."',
           quality: 'weak',
           rubric: { diagnosis: 0, development: 0, impact: 0 },
           outcome: {
             headline: 'Yes to everything.',
             narrative: ['The client is satisfied. Five exhausted engineers now cover every hour of every day.'],
             reactions: [
-              { characterId: 'mira', mood: 'withdrawn', text: 'Three months of this?' },
-              { characterId: 'sol', mood: 'concerned', text: 'We\'ve promised the thing most likely to cause the next outage.' },
+              { characterId: 'mira', mood: 'withdrawn', text: 'Three whole months of this?' },
+              { characterId: 'sol', mood: 'concerned', text: 'We\'ve just promised the thing most likely to cause the next outage.' },
             ],
             effects: { trust: 2, wellbeing: -3, quality: -1 },
           },
@@ -376,7 +376,7 @@ export const topFloor: Scenario = {
         },
         {
           id: 'recovery-plan',
-          label: '"A time-boxed plan: fix the change process, run monthly failover drills, staff a rota with cover from other teams, and report weekly. And here\'s what we won\'t promise."',
+          label: '"A clear plan with an end date. We\'ll fix how updates get checked, practise failovers every month, share the on-call rota with other teams, and report to you every week. And here\'s what we won\'t promise."',
           quality: 'strong',
           rubric: { diagnosis: 2, development: 2, impact: 2 },
           unlockedBy: ['mira-3', 'priya', 'staffing'],
@@ -384,8 +384,8 @@ export const topFloor: Scenario = {
             headline: 'A promise the building can keep.',
             narrative: ['The client pushes back on the lack of round-the-clock cover, then accepts the weekly reports and the drills. Mira volunteers to design the first drill.'],
             reactions: [
-              { characterId: 'adaeze', mood: 'encouraged', text: 'Something real instead of something big. I can work with that.' },
-              { characterId: 'mira', mood: 'encouraged', text: 'I\'ll run the first drill. I know exactly where people get stuck.' },
+              { characterId: 'adaeze', mood: 'encouraged', text: 'That\'s something real, rather than something big. I can work with that.' },
+              { characterId: 'mira', mood: 'encouraged', text: 'I\'ll run the first practice. I know exactly where people get stuck.' },
             ],
             effects: { trust: 1, capability: 2, wellbeing: 1, quality: 2 },
           },
@@ -395,13 +395,13 @@ export const topFloor: Scenario = {
         },
         {
           id: 'decline',
-          label: '"Nothing extra. This was a one-off."',
+          label: '"Nothing extra. This was just a one-off."',
           quality: 'weak',
           rubric: { diagnosis: 0, development: 0, impact: 0 },
           outcome: {
             headline: 'Nothing promised. Nothing learned.',
             narrative: ['Dr. Nwosu stands, thanks Sol, and starts the contract review the next morning.'],
-            reactions: [{ characterId: 'adaeze', mood: 'frustrated', text: 'It wasn\'t a one-off. The process that caused it is still there.' }],
+            reactions: [{ characterId: 'adaeze', mood: 'frustrated', text: 'With respect, it wasn\'t a one-off. Whatever caused it is still there.' }],
             effects: { trust: -3 },
           },
           feedback: 'Calling it a one-off ignored what you found: a skipped review, a broken runbook, no drills. Those are conditions, and conditions repeat.',
@@ -409,13 +409,13 @@ export const topFloor: Scenario = {
         },
         {
           id: 'credit',
-          label: '"A large service credit, in place of changes."',
+          label: '"A large refund on your bill, instead of changes."',
           quality: 'mixed',
           rubric: { diagnosis: 0, development: 0, impact: 1 },
           outcome: {
             headline: 'Time, bought.',
             narrative: ['The client accepts, warily. Nothing changes operationally.'],
-            reactions: [{ characterId: 'sol', mood: 'neutral', text: 'It calms things down. It doesn\'t make anything safer.' }],
+            reactions: [{ characterId: 'sol', mood: 'neutral', text: 'It calms things down. It doesn\'t make anything safer, though.' }],
             effects: { trust: 1 },
           },
           feedback: 'A credit acknowledges the client\'s cost, which matters. It does nothing about skill, process, or the team\'s conditions.',
@@ -428,12 +428,12 @@ export const topFloor: Scenario = {
       id: 'resolution',
       title: 'Dawn',
       lines: [
-        { speaker: 'narrator', text: 'Dawn comes up over the city. The red light on Sol\'s desk has gone dark.' },
-        { speaker: 'mira', text: 'Next time this happens, I\'ll be the one guiding someone.', when: { choice: { decision: 'stabilise', option: 'guided' } } },
-        { speaker: 'mira', text: 'I still haven\'t done a failover. Next time, I\'ll be just as stuck.', when: { choice: { decision: 'stabilise', option: ['take-over', 'wait-vendor'] } } },
-        { speaker: 'adaeze', text: 'I trust you more after tonight than before. I didn\'t expect to say that.', when: { choice: { decision: 'cause', option: 'correct-record' } } },
-        { speaker: 'sol', text: 'The real cause is still a secret, or still unconfirmed. Either way, it can happen again.', when: { choice: { decision: 'cause', option: ['blame-vendor', 'quiet-rollback', 'keep-investigating'] } } },
-        { speaker: 'sol', text: 'Four floors in one week. Go home. Then come back and tell me what you\'d do differently.' },
+        { speaker: 'narrator', text: 'The sun comes up over the city. The red light on Sol\'s desk has finally gone out.' },
+        { speaker: 'mira', text: 'You know what? Next time this happens, I\'ll be the one guiding someone.', when: { choice: { decision: 'stabilise', option: 'guided' } } },
+        { speaker: 'mira', text: 'I still haven\'t done a failover myself. Next time, I\'ll be just as stuck.', when: { choice: { decision: 'stabilise', option: ['take-over', 'wait-vendor'] } } },
+        { speaker: 'adaeze', text: 'Honestly, I trust you more after tonight than I did before. I didn\'t expect to say that.', when: { choice: { decision: 'cause', option: 'correct-record' } } },
+        { speaker: 'sol', text: 'We still haven\'t been honest about the real cause, or we\'re still not sure of it. Either way, it could happen again.', when: { choice: { decision: 'cause', option: ['blame-vendor', 'quiet-rollback', 'keep-investigating'] } } },
+        { speaker: 'sol', text: 'Four floors in one week. Thank you. Now go home and get some sleep. Then come back and tell me what you\'d do differently.' },
       ],
     },
     {

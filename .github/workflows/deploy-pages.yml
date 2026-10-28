@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Commits made by the voice generator don't trigger push events, so redeploy
+  # once it finishes on main.
+  workflow_run:
+    workflows: ["Generate voices (ElevenLabs)"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read

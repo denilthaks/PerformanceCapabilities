@@ -36,10 +36,10 @@ export const lateShift: Scenario = {
       id: 'briefing',
       title: 'Floor 23',
       lines: [
-        { speaker: 'narrator', text: 'Rain on the windows. The espresso machine is on its fourth hour. Nobody here looks like they\'re going home.' },
-        { speaker: 'priya', text: 'You must be the one who sorted out the Vault. Good.', when: { flag: 'signal-vault:redesigned-routing' } },
-        { speaker: 'priya', text: 'Meridian launches in six weeks. Marcus\'s Build team is two weeks ahead of plan.' },
-        { speaker: 'priya', text: 'The board wants to hand Build an award and tell everyone else to match their pace. Before I agree, I want your read.' },
+        { speaker: 'narrator', text: 'Rain runs down the windows. The coffee machine has been going for four hours, and nobody here looks ready to go home.' },
+        { speaker: 'priya', text: 'You must be the one who sorted out the Vault. I\'m glad you\'re here.', when: { flag: 'signal-vault:redesigned-routing' } },
+        { speaker: 'priya', text: 'Thank you for coming up so late. Meridian launches in six weeks, and Marcus\'s Build team is two weeks ahead of plan.' },
+        { speaker: 'priya', text: 'The board wants to give Build an award and tell everyone else to keep up. Before I agree, I\'d like your honest opinion.' },
       ],
     },
     {
@@ -53,50 +53,50 @@ export const lateShift: Scenario = {
           id: 'priya', label: 'Priya', kind: 'character', characterId: 'priya', x: 220, y: 234,
           summary: 'Priya owns the shared goal: launch on time with something people trust. Each team reports green; she can\'t see the whole.',
           lines: [
-            { speaker: 'priya', text: 'Every team reports green on its own numbers. And yet.' },
-            { speaker: 'priya', text: 'Meridian only works if all three teams work together. Nobody\'s measured on that except me.' },
+            { speaker: 'priya', text: 'Every team tells me their numbers look fine. And yet, something doesn\'t feel right.' },
+            { speaker: 'priya', text: 'Meridian only works if all three teams work together. And nobody is measured on that, except me.' },
           ],
         },
         {
           id: 'marcus', label: 'Marcus', kind: 'character', characterId: 'marcus', x: 297, y: 118,
           summary: 'Marcus\'s team ships fast by pushing hard, and he resents being slowed down.',
           lines: [
-            { speaker: 'marcus', text: 'Top score on this thing\'s mine. Course it is.' },
-            { speaker: 'marcus', text: 'My team ships. Weekends if we have to. That\'s what commitment looks like.' },
-            { speaker: 'marcus', text: 'Support moans about defects. That\'s what support is for, isn\'t it?' },
+            { speaker: 'marcus', text: 'See that top score? That\'s mine. Of course it is.' },
+            { speaker: 'marcus', text: 'My team delivers. We work weekends if we have to. That\'s what commitment looks like.' },
+            { speaker: 'marcus', text: 'Support complains about bugs. But that\'s what support is there for, isn\'t it?' },
           ],
         },
         {
           id: 'lena', label: 'Lena', kind: 'character', characterId: 'lena', x: 152, y: 150,
           summary: 'Lena\'s team is absorbing the defects from Build\'s early releases on rising overtime, unseen.',
           lines: [
-            { speaker: 'lena', text: 'Every early release lands on my team. We fix what customers find.' },
-            { speaker: 'lena', text: 'Two of mine asked to transfer this month. Nobody upstairs noticed, because we\'re not on the board.' },
+            { speaker: 'lena', text: 'Every rushed release lands on my team. We\'re the ones fixing whatever customers find.' },
+            { speaker: 'lena', text: 'Two of my people asked to transfer this month. Nobody upstairs noticed, because our work isn\'t on the board.' },
           ],
         },
         {
           id: 'ravi', label: 'Ravi', kind: 'character', characterId: 'ravi', x: 126, y: 150,
           summary: 'Ravi, in Support, has stopped recording his overtime.',
           lines: [
-            { speaker: 'ravi', text: 'Sixty-hour week. I\'ve stopped putting it on the timesheet.' },
-            { speaker: 'ravi', text: 'If nobody reads it, it\'s just admin.' },
+            { speaker: 'ravi', text: 'I\'ve done sixty hours this week. I\'ve stopped putting it on my timesheet.' },
+            { speaker: 'ravi', text: 'If nobody reads it anyway, what\'s the point?' },
           ],
         },
         {
           id: 'jonah', label: 'Jonah', kind: 'character', characterId: 'jonah', x: 340, y: 195,
           summary: 'Jonah, a junior on Build, is exhausted but feels he must match the "heroes". He wrote two of the bugs Support is fixing.',
           lines: [
-            { speaker: 'jonah', text: 'Hey. Sorry, still on the release branch.' },
-            { speaker: 'jonah', text: 'Everyone on Build works nights. If I stop, I\'m the one holding them back.' },
-            { speaker: 'jonah', text: 'Two of the bugs Lena\'s team is fixing are mine. I was on hour fourteen.' },
+            { speaker: 'jonah', text: 'Oh, hey. Sorry, I\'m still finishing the release.' },
+            { speaker: 'jonah', text: 'Everyone on Build works late. If I stop, I\'m the one holding them back.' },
+            { speaker: 'jonah', text: 'Two of the bugs Lena\'s team is fixing are mine. I\'d been working for fourteen hours.' },
           ],
         },
         {
           id: 'sam', label: 'Sam', kind: 'character', characterId: 'sam', x: 78, y: 118,
           summary: 'Sam the barista notices Build orders triple shots at 2am, and Support has stopped coming up for breaks at all.',
           lines: [
-            { speaker: 'sam', text: 'Want to know how a company\'s doing? Watch the coffee orders.' },
-            { speaker: 'sam', text: 'Build: triple shots, 2am, every night. Support: haven\'t seen them up here in a month. They eat at their desks.' },
+            { speaker: 'sam', text: 'Want to know how a company is really doing? Watch the coffee orders.' },
+            { speaker: 'sam', text: 'Build orders triple shots at two in the morning, every single night. Support? I haven\'t seen them up here in a month. They eat at their desks.' },
           ],
         },
         {
@@ -142,7 +142,7 @@ export const lateShift: Scenario = {
       id: 'strategy',
       title: 'The recommendation',
       asker: 'priya',
-      prompt: 'The board meets in the morning. What do I tell them?',
+      prompt: 'The board meets first thing tomorrow. What should I tell them?',
       evidenceFrom: ['lounge'],
       options: [
         {
@@ -154,8 +154,8 @@ export const lateShift: Scenario = {
             headline: 'Momentum!',
             narrative: ['The announcement lands well. Build pushes even harder. For two weeks, the board has never looked greener.'],
             reactions: [
-              { characterId: 'marcus', mood: 'encouraged', text: 'About time.' },
-              { characterId: 'lena', mood: 'withdrawn', text: 'Match their pace. Right.' },
+              { characterId: 'marcus', mood: 'encouraged', text: 'About time, too.' },
+              { characterId: 'lena', mood: 'withdrawn', text: 'Match their pace. Right. Sure.' },
             ],
             effects: { output: 2, cohesion: -1 },
             later: [
@@ -171,7 +171,7 @@ export const lateShift: Scenario = {
         },
         {
           id: 'shared-measure',
-          label: '"One shared definition of ready across all three teams. Rotate Build engineers onto defect fixing, recognise anyone who helps another team, and cap overtime."',
+          label: '"Let\'s agree one shared meaning of ready for all three teams. Move some Build engineers onto fixing bugs, thank anyone who helps another team, and put a limit on overtime."',
           quality: 'strong',
           rubric: { diagnosis: 2, development: 2, impact: 2 },
           unlockedBy: ['lena', 'ravi', 'sam'],
@@ -179,9 +179,9 @@ export const lateShift: Scenario = {
             headline: 'Slower on one column. Faster on the one that matters.',
             narrative: ['Build\'s pace dips for a fortnight while engineers rotate into Support. Marcus is loudly unhappy.'],
             reactions: [
-              { characterId: 'marcus', mood: 'frustrated', text: 'You\'re slowing down the only team that delivers.' },
-              { characterId: 'lena', mood: 'encouraged', text: 'First time anyone has looked at our column.' },
-              { characterId: 'priya', mood: 'encouraged', text: 'Now everyone\'s measured on what I\'m measured on.' },
+              { characterId: 'marcus', mood: 'frustrated', text: 'You\'re slowing down the only team that actually delivers.' },
+              { characterId: 'lena', mood: 'encouraged', text: 'That\'s the first time anyone has looked at our side of things.' },
+              { characterId: 'priya', mood: 'encouraged', text: 'Good. Now everyone is measured on the same thing I am.' },
             ],
             effects: { output: -1, cohesion: 2, trust: 1 },
             later: [
@@ -196,15 +196,15 @@ export const lateShift: Scenario = {
         },
         {
           id: 'contractors',
-          label: '"Bring in contractors to clear Support\'s backlog. Leave Build alone."',
+          label: '"Bring in contractors to clear Support\'s backlog, and leave Build alone."',
           quality: 'mixed',
           rubric: { diagnosis: 1, development: 0, impact: 1 },
           outcome: {
             headline: 'Capacity, bought.',
             narrative: ['Contractors arrive within a week. Lena\'s overtime drops. Build carries on exactly as before.'],
             reactions: [
-              { characterId: 'lena', mood: 'relieved', text: 'Help, at last. The defects keep coming, though.' },
-              { characterId: 'marcus', mood: 'relieved', text: 'Good. Nothing changes for us.' },
+              { characterId: 'lena', mood: 'relieved', text: 'Help, at last. Although the bugs keep coming.' },
+              { characterId: 'marcus', mood: 'relieved', text: 'Good. So nothing changes for us.' },
             ],
             effects: { wellbeing: 1, cohesion: -1 },
             later: [
@@ -219,15 +219,15 @@ export const lateShift: Scenario = {
         },
         {
           id: 'freeze',
-          label: '"Freeze all releases until every team shows green."',
+          label: '"Stop all releases until every team is ready."',
           quality: 'mixed',
           rubric: { diagnosis: 1, development: 0, impact: 1 },
           outcome: {
             headline: 'Everything stops.',
             narrative: ['Releases halt. Support finally breathes. Build sits idle and furious.'],
             reactions: [
-              { characterId: 'marcus', mood: 'frustrated', text: 'So we\'re punished for being ahead.' },
-              { characterId: 'lena', mood: 'relieved', text: 'A pause. Finally.' },
+              { characterId: 'marcus', mood: 'frustrated', text: 'So we get punished for being ahead. Brilliant.' },
+              { characterId: 'lena', mood: 'relieved', text: 'A pause. Finally, we can breathe.' },
             ],
             effects: { output: -2, wellbeing: 1 },
             later: [
@@ -254,18 +254,18 @@ export const lateShift: Scenario = {
       id: 'jonah-talk',
       title: 'Jonah',
       asker: 'jonah',
-      prompt: 'Got a minute? I want to be a Launch Hero like the others. What do I need to do?',
+      prompt: 'Have you got a minute? I really want to be a Launch Hero, like the others. What do I need to do?',
       evidenceFrom: ['lounge'],
       options: [
         {
           id: 'praise',
-          label: '"Keep doing what you\'re doing. The effort will pay off."',
+          label: '"Just keep doing what you\'re doing. All that effort will pay off."',
           quality: 'weak',
           rubric: { development: 0, impact: 0 },
           outcome: {
             headline: 'Encouragement, in the wrong direction.',
             narrative: ['Jonah leaves fired up, and works through the next two weekends.'],
-            reactions: [{ characterId: 'jonah', mood: 'encouraged', text: 'Thanks. I\'ll keep pushing.' }],
+            reactions: [{ characterId: 'jonah', mood: 'encouraged', text: 'Thanks. I\'ll keep pushing, then.' }],
             effects: { wellbeing: -2 },
           },
           feedback: 'Kindly meant, but it reinforces the very thing hurting him: being valued for hours, not outcomes. He didn\'t need more effort. He needed different conditions.',
@@ -273,7 +273,7 @@ export const lateShift: Scenario = {
         },
         {
           id: 'conditions',
-          label: '"Let\'s agree a sustainable workload with Marcus, pair you with a senior, and get clear on what good looks like here."',
+          label: '"Let\'s sit down with Marcus and agree a workload you can keep up. We\'ll pair you with someone senior, and be clear about what good work looks like here."',
           quality: 'strong',
           rubric: { development: 2, impact: 2 },
           unlockedBy: ['jonah'],
@@ -281,8 +281,8 @@ export const lateShift: Scenario = {
             headline: 'A different definition of good.',
             narrative: ['Marcus agrees, grudgingly. Jonah\'s hours drop, and his defect count drops with them.'],
             reactions: [
-              { characterId: 'jonah', mood: 'relieved', text: 'I didn\'t know I was allowed to stop.' },
-              { characterId: 'marcus', mood: 'neutral', text: 'His code\'s cleaner. I\'ll give you that.' },
+              { characterId: 'jonah', mood: 'relieved', text: 'Honestly? I didn\'t know I was allowed to stop.' },
+              { characterId: 'marcus', mood: 'neutral', text: 'His code is cleaner now. I\'ll give you that.' },
             ],
             effects: { wellbeing: 2, quality: 1, cohesion: 1 },
           },
@@ -292,13 +292,13 @@ export const lateShift: Scenario = {
         },
         {
           id: 'move',
-          label: '"Let\'s move you to Support, away from the pressure."',
+          label: '"Let\'s move you over to Support, away from all the pressure."',
           quality: 'mixed',
           rubric: { development: 1, impact: 0 },
           outcome: {
             headline: 'Out of the fire.',
             narrative: ['Jonah moves. He recovers. Build\'s culture doesn\'t change, and the next junior inherits his hours.'],
-            reactions: [{ characterId: 'jonah', mood: 'neutral', text: 'Quieter here. I miss building things.' }],
+            reactions: [{ characterId: 'jonah', mood: 'neutral', text: 'It\'s quieter here. I do miss building things, though.' }],
             effects: { wellbeing: 1 },
           },
           feedback: 'It protects Jonah, which matters. But it moves the person, not the conditions, so the next junior walks into the same pressure.',
@@ -306,13 +306,13 @@ export const lateShift: Scenario = {
         },
         {
           id: 'time-off',
-          label: '"Take a week off. Come back fresh."',
+          label: '"Take a week off, and come back fresh."',
           quality: 'mixed',
           rubric: { development: 0, impact: 1 },
           outcome: {
             headline: 'Rested, then right back where he was.',
             narrative: ['Jonah takes the week. A fortnight after he\'s back, he\'s doing fourteen-hour days again.'],
-            reactions: [{ characterId: 'jonah', mood: 'withdrawn', text: 'The week was good. Nothing\'s different, though.' }],
+            reactions: [{ characterId: 'jonah', mood: 'withdrawn', text: 'The week off was nice. But nothing has changed, has it?' }],
             effects: { wellbeing: 1 },
           },
           feedback: 'Rest helps, and you saw he needed it. But nothing about his situation changed, so the pattern came straight back.',

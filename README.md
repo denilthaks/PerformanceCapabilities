@@ -41,7 +41,15 @@ npm run e2e        # after a build: end-to-end checks in Chromium (needs Playwri
 - **Motion:** pages ease in, embers drift in the background, panels rise as you scroll, and cards tilt in 3D under the cursor. All of it is off under reduced motion.
 - **The Codex** (Principles): three 3D level slabs with flip cards for the twelve principles (each level's cards stay locked until you resolve its floor), a turning Seven Stars constellation, and collectable insight cards. Sources and verification notes sit in one collapsible section.
 - **Sound effects:** buttons, replies, discoveries, secrets and medals each have their own sound. They're synthesized live with the Web Audio API, so there are no audio files.
-- **Voice-over:** dialogue, questions and reactions are spoken using the device's best built-in English voices, at a natural pitch, with a consistent voice per character. It's still device text-to-speech, so it can sound synthetic; recorded or AI-generated voice files would be needed for natural acting. Where speech isn't supported, the game is text only.
+- **Dialogue** is written the way people actually talk at work: polite where it should be, casual where it can be, in plain words. Characters hedge, interrupt themselves and joke a little, so it reads like a conversation rather than a textbook.
+- **Voice-over:** dialogue, questions and reactions are spoken aloud.
+  - **Natural voices from ElevenLabs.** Every line has its own recording, with one voice per character. The recordings are generated ahead of time and shipped as MP3 files in `public/voice/`. The API key never reaches the browser. See [Natural voices (ElevenLabs)](#natural-voices-elevenlabs).
+  - **Until those files exist,** or for any line that has none, the game falls back to the device's best built-in voice, at a natural pitch and with a consistent voice per character. Where speech isn't supported, the game is text only.
+- **Speak instead of typing.** Wherever you type (the name on your pass and your notebook notes), there's a red, gently hovering mic.
+  - Tap it and talk. Your words appear in the field as you speak (speech-to-text), and a live sound wave shows the mic is hearing you.
+  - Tap 🔈 to hear what's written read back to you (text-to-speech).
+  - You can still type or edit at any time. For a name, speaking replaces the field; for a note, speaking adds to what's there.
+  - Voice typing uses the browser's own speech recognition (Chrome, Edge, Safari). Some browsers transcribe on their maker's servers, and the game says so the first time you use it. Elsewhere the mic is greyed out with a note.
 - Turn either off in **Settings**, or use 🔊 in the in-game bar.
 
 ## The Tower
@@ -81,6 +89,22 @@ Every framework item carries a verification badge: Published, Published (summari
 - **Not used:** the supplied `chapter2_season7_map.glb`. Its texture is Epic Games' Fortnite map, which the Sketchfab CC-BY licence can't cover, and it's a bright fantasy island. See the audit doc.
 - **Logo:** the Performance Capability logo, used as supplied on a light plate.
 
+## Natural voices (ElevenLabs)
+
+The voices are made once, ahead of time, so the site itself stays static and your API key stays private.
+
+1. **Add the key.** In the GitHub repo, open **Settings → Secrets and variables → Actions → New repository secret**. Name it `ELEVENLABS_API_KEY` and paste your ElevenLabs API key as the value.
+2. **Run the generator.** In **Actions**, run **Generate voices (ElevenLabs)** on `main`.
+   - It makes audio only for lines that don't have any yet, and commits it to `public/voice/`.
+   - The Pages site then redeploys with the voices.
+   - Run it again after editing dialogue: changed lines get new audio, and untouched lines are skipped.
+   - Tick **prune** to delete audio for lines that no longer exist.
+3. **Or run it locally** with `ELEVENLABS_API_KEY=... npm run voices`, then commit `public/voice/`. `npm run voices -- --dry` counts lines and characters without calling the API.
+
+- **Cost.** There are 156 spoken lines, about 11,900 characters. That's a little over the ElevenLabs free tier's monthly allowance, so either use a paid plan or run it across two months: it resumes where it stopped.
+- **Voices.** Each character's voice is set in `tools/voices.config.json`. They default to ElevenLabs' stock voices, and you can swap any of them for a voice from your own library. The script checks every voice ID against your account before it spends anything.
+- **How a line finds its file.** Each file is named after the speaker plus a hash of the exact words (`src/app/voice-lines.ts`). The game and the generator share that code, so they always agree.
+
 ## Architecture
 
 ```
@@ -101,7 +125,7 @@ src/app/           React state, hash router, a11y helpers
 
 ## Testing
 
-- `npm test`: **42 unit tests**, covering:
+- `npm test`: **46 unit tests**, covering:
   - content validation
   - discovery-gated options
   - inspected-dependent dialogue
@@ -112,12 +136,13 @@ src/app/           React state, hash router, a11y helpers
   - persistence against hostile, corrupted or old saves
   - unlocks and achievements
   - that every floor can be finished, and scores 100% on the best path, with or without earlier flags
+  - voice lines: stable file keys, stage directions not spoken, and a voice configured for every speaker
 - `npm run e2e`: **13 checks** in Chromium against the production build:
   - the opening (logo fade and ring bloom, auto hand-over, replays on every visit)
   - sounds generated and lines spoken (counted, not listened to)
   - home, navigation and active states
   - locked floors
-  - the pass
+  - the pass, including voice typing into the name with the mic and reading it back (a stand-in recogniser, since headless Chromium has no microphone)
   - the lobby: click and keyboard walking, talking, a refresh mid-floor, a locked reply that opens after finding Margit, a secret memo, gold
   - replay keeping the best medal and teasing undiscovered outcomes
   - Floors 2–4 with carry-over
