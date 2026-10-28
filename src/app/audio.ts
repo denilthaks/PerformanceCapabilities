@@ -81,7 +81,8 @@ export function play(sfx: Sfx) {
 export function installClickSounds(): () => void {
   const onClick = (e: MouseEvent) => {
     const el = (e.target as HTMLElement | null)?.closest('button, a.btn, a.floor-window, a.zone-card-link, .reply, .check, .avatar-option, .segmented label');
-    if (!el || (el as HTMLButtonElement).disabled) return;
+    // data-silent: the mic, whose click the recogniser would otherwise hear.
+    if (!el || (el as HTMLButtonElement).disabled || el.closest('[data-silent]')) return;
     if (el.matches('.btn-primary')) play('confirm');
     else if (el.matches('.reply, .chip, .check, .avatar-option, .segmented label')) play('select');
     else play('click');

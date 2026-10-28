@@ -197,10 +197,18 @@ const checks = [
     await page.waitForSelector('#char-name');
     await page.click('button[type=submit]');
     expect(await page.locator('#char-name-error').count() === 1, 'empty name error');
-    // Voice typing: the red mic fills the field as you speak, and read-back speaks it.
+    // Voice typing: the mic fills the field as you speak; the wave forms only while speech is heard.
     await page.click('.mic-btn', { force: true });
-    await page.waitForFunction(() => document.querySelector('#char-name').value === 'Ada Lovelace');
-    await page.waitForSelector('.voice-input:not(.listening)');
+    await page.waitForSelector('.voice-field.listening');
+    await page.waitForTimeout(150);
+    expect(await page.locator('.voice-field.hearing').count() === 0, 'no wave before any speech');
+    await page.evaluate(() => window.__rec.say('Ada', false));
+    expect(await page.locator('.voice-field.hearing').count() === 1, 'wave forms while speech is heard');
+    await page.evaluate(() => window.__rec.say('Ada Lovelace.', true));
+    expect(await page.inputValue('#char-name') === 'Ada Lovelace', 'speech fills the name');
+    await page.waitForSelector('.voice-field.listening:not(.hearing)', { timeout: 3000 });
+    await page.click('.mic-btn', { force: true });
+    await page.waitForSelector('.voice-field:not(.listening)');
     await page.click('.read-btn', { force: true });
     expect(await page.evaluate(() => window.__spoken.includes('Ada Lovelace')), 'read-back speaks the name');
     await page.fill('#char-name', 'Ada');
@@ -407,16 +415,10 @@ async function runSuite(browser, list, contextOpts, label) {
       AC.prototype.createOscillator = function (...a) { window.__tones++; return orig.apply(this, a); };
     }
     // A stand-in recogniser: "hears" a name, in two steps like the real thing.
+    // A stand-in recogniser the test drives by hand (headless Chromium has no mic).
     window.SpeechRecognition = window.webkitSpeechRecognition = class {
-      start() {
-        const fire = (text, isFinal) => {
-          const r = [{ transcript: text }]; r.isFinal = isFinal;
-          this.onresult?.({ resultIndex: 0, results: [r] });
-        };
-        setTimeout(() => fire('Ada', false), 50);
-        setTimeout(() => fire('Ada Lovelace.', true), 120);
-        setTimeout(() => this.onend?.(), 180);
-      }
+      start() { window.__rec = this; setTimeout(() => this.onaudiostart?.(), 10); }
+      say(text, isFinal) { const r = [{ transcript: text }]; r.isFinal = isFinal; this.onspeechstart?.(); this.onresult?.({ resultIndex: 0, results: [r] }); }
       stop() { this.onend?.(); }
       abort() {}
     };

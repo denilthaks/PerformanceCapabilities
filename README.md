@@ -45,11 +45,13 @@ npm run e2e        # after a build: end-to-end checks in Chromium (needs Playwri
 - **Voice-over:** dialogue, questions and reactions are spoken aloud.
   - **Natural voices from ElevenLabs.** Every line has its own recording, with one voice per character. The recordings are generated ahead of time and shipped as MP3 files in `public/voice/`. The API key never reaches the browser. See [Natural voices (ElevenLabs)](#natural-voices-elevenlabs).
   - **Until those files exist,** or for any line that has none, the game falls back to the device's best built-in voice, at a natural pitch and with a consistent voice per character. Where speech isn't supported, the game is text only.
-- **Speak instead of typing.** Wherever you type (the name on your pass and your notebook notes), there's a red, gently hovering mic.
-  - Tap it and talk. Your words appear in the field as you speak (speech-to-text), and a live sound wave shows the mic is hearing you.
-  - Tap 🔈 to hear what's written read back to you (text-to-speech).
-  - You can still type or edit at any time. For a name, speaking replaces the field; for a note, speaking adds to what's there.
-  - Voice typing uses the browser's own speech recognition (Chrome, Edge, Safari). Some browsers transcribe on their maker's servers, and the game says so the first time you use it. Elsewhere the mic is greyed out with a note.
+- **Speak instead of typing.** Wherever you type (the name on your pass and your notebook notes), two round red buttons sit inside the field.
+  - The **mic** (speech-to-text) floats gently. Tap it and talk; it pulses while it's on, and your words appear as you speak. Tap it again to stop. For a name, speaking replaces the field; for a note, it adds to what's there.
+  - The **sound wave** forms only while your voice is actually being heard, and settles as soon as you pause. On desktop Chrome and Edge it follows your real voice level. Phones and Safari can't share the mic with a level meter, so there it's driven by the speech recogniser's own events.
+  - The **speaker** reads the field back to you (text-to-speech).
+  - Typing and editing always work too. Problems (a blocked mic, no speech heard) show as one short line under the field; otherwise there's no extra text.
+  - Voice typing uses the browser's own speech recognition (Chrome, Edge, Safari). Some browsers transcribe on their maker's servers. Firefox has none, so the mic is greyed out there.
+- **The in-game mute button** is the same round red button, and turns grey when muted.
 - Turn either off in **Settings**, or use 🔊 in the in-game bar.
 
 ## The Tower
@@ -142,7 +144,7 @@ src/app/           React state, hash router, a11y helpers
   - sounds generated and lines spoken (counted, not listened to)
   - home, navigation and active states
   - locked floors
-  - the pass, including voice typing into the name with the mic and reading it back (a stand-in recogniser, since headless Chromium has no microphone)
+  - the pass, including voice typing: the wave appears only once speech is heard, the name fills in, and reading it back works (a stand-in recogniser, since headless Chromium has no microphone)
   - the lobby: click and keyboard walking, talking, a refresh mid-floor, a locked reply that opens after finding Margit, a secret memo, gold
   - replay keeping the best medal and teasing undiscovered outcomes
   - Floors 2–4 with carry-over

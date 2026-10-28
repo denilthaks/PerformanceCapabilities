@@ -20,7 +20,7 @@ import { MedalIcon } from '../medals';
 import { Portrait } from '../sprites';
 import { Dialogue } from './Dialogue';
 import { speak, speakAll } from '../../app/voice';
-import { VoiceInput } from '../VoiceInput';
+import { VoiceField } from '../VoiceInput';
 
 export interface PanelProps<S> {
   scenario: Scenario;
@@ -270,8 +270,9 @@ export function ReflectionPanel({ stage, run, setRun, onContinue, continueLabel 
         ))}
       </fieldset>
       <label htmlFor="reflection-note" className="note-label">{stage.notePrompt} <span className="muted">(optional, private)</span></label>
-      <textarea id="reflection-note" rows={3} maxLength={2000} value={note} onChange={(e) => update(selected, e.target.value)} />
-      <VoiceInput value={note} onChange={(v) => update(selected, v)} maxLength={2000} label="your note" />
+      <VoiceField value={note} onChange={(v) => update(selected, v)} maxLength={2000} label="your note">
+        <textarea id="reflection-note" rows={3} maxLength={2000} value={note} onChange={(e) => update(selected, e.target.value)} />
+      </VoiceField>
       <div className="explore-foot">
         {selected.length === 0 ? <p className="muted">Tick at least one line to close the notebook.</p> : <ContinueButton onClick={onContinue} label={continueLabel} />}
       </div>
