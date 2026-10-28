@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "e2e": "node e2e/run-e2e.cjs",
+    "e2e:prototype": "node e2e/run-prototype.cjs",
     "voices": "tsx tools/generate-voices.ts"
   },
   "engines": {

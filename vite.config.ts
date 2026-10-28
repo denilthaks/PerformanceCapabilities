@@ -10,6 +10,11 @@ export default defineConfig({
     target: 'es2020',
     chunkSizeWarningLimit: 700,
     rollupOptions: {
+      // The game, plus the standalone nine-screen prototype at prototype/.
+      input: {
+        main: 'index.html',
+        prototype: 'prototype/index.html',
+      },
       output: {
         manualChunks: { react: ['react', 'react-dom'] },
       },

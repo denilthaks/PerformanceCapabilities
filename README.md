@@ -24,6 +24,8 @@ npm run build      # typecheck + production build into dist/
 npm run e2e        # after a build: end-to-end checks in Chromium (needs Playwright + Chromium)
 ```
 
+A standalone nine-screen prototype of the Ground floor lives in [`prototype/`](prototype/README.md) (`npm run e2e:prototype` tests it).
+
 `dist/` works from any static host or sub-path. `.github/workflows/deploy-pages.yml` publishes to GitHub Pages from `main`. The page asks search engines not to index it.
 
 ## How to play

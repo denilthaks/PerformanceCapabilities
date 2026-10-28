@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Performance Capability: The Journey (prototype)</title>
+  <meta name="description" content="A playable nine-screen prototype of the Ground floor of Performance Capability: The Journey.">
+  <meta name="theme-color" content="#050407">
+  <!-- Unlisted prototype: ask search engines not to index it. This is not access control. -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Libre+Caslon+Text:wght@700&family=Pixelify+Sans:wght@400;600&family=Sora:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="chrome">
+    <span id="chmark" aria-hidden="true"></span>
+    <div class="ch-t"><b>PERFORMANCE CAPABILITY</b><span>The Journey</span></div>
+    <span class="sep"></span>
+    <span class="ch-s">Interactive prototype · Ground floor: The Front Gate</span>
+    <a class="ch-r" href="../">Full game ↗</a>
+  </header>
+  <main id="frame" class="frame">
+    <div id="stage" class="stage" aria-live="off"></div>
+  </main>
+  <footer class="pagefoot">
+    <span>All scenes are 2D pixel art. Depth is simulated (layered parallax on the title, a follow camera in the lobby); nothing here is rendered in genuine 3D.</span>
+    <span>Independent prototype inspired by Ben Benson's published Performance Capability framework. Not reviewed or endorsed by Performance Capability. All characters are fictional.</span>
+  </footer>
+  <noscript><p style="padding:1rem;color:#F4F4F7;background:#07080C">This prototype is an interactive game and needs JavaScript turned on.</p></noscript>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

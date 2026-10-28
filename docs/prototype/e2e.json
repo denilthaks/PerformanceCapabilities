@@ -1,0 +1,123 @@
+{
+  "at": "2026-10-28T22:44:15.200Z",
+  "passed": 23,
+  "failed": 0,
+  "results": [
+    {
+      "name": "1 Title renders the logo and Start Journey",
+      "ok": true,
+      "ms": 463
+    },
+    {
+      "name": "2 Character selection: validation, keyboard choice, pass",
+      "ok": true,
+      "ms": 757
+    },
+    {
+      "name": "3 Lobby: intro plays, then WASD/arrows move the player and are blocked by furniture",
+      "ok": true,
+      "ms": 4342
+    },
+    {
+      "name": "Clicking the floor walks there (mouse)",
+      "ok": true,
+      "ms": 2304
+    },
+    {
+      "name": "4 NPC dialogue: Margit, then Kai reacts to what you learned",
+      "ok": true,
+      "ms": 5852
+    },
+    {
+      "name": "E key interacts when standing next to someone",
+      "ok": true,
+      "ms": 4835
+    },
+    {
+      "name": "5 Evidence: notebook tracks clues and unlocks replies",
+      "ok": true,
+      "ms": 20472
+    },
+    {
+      "name": "6 Transition into the 2D decision view",
+      "ok": true,
+      "ms": 2837
+    },
+    {
+      "name": "7 Decision: answer is required; keys pick options",
+      "ok": true,
+      "ms": 811
+    },
+    {
+      "name": "8 Feedback shows outcome, reactions and learning",
+      "ok": true,
+      "ms": 960
+    },
+    {
+      "name": "Reflection requires at least one line",
+      "ok": true,
+      "ms": 276
+    },
+    {
+      "name": "9 Floor complete: gold medal, XP, progress",
+      "ok": true,
+      "ms": 448
+    },
+    {
+      "name": "Persistence: best result and position survive a reload",
+      "ok": true,
+      "ms": 648
+    },
+    {
+      "name": "Replay keeps the best and starts a fresh run",
+      "ok": true,
+      "ms": 159
+    },
+    {
+      "name": "Mid-run save resumes in the lobby with clues kept",
+      "ok": true,
+      "ms": 4848
+    },
+    {
+      "name": "A corrupted save is ignored safely",
+      "ok": true,
+      "ms": 1216
+    },
+    {
+      "name": "The main game save is untouched",
+      "ok": true,
+      "ms": 2
+    },
+    {
+      "name": "Mobile title fits the screen",
+      "ok": true,
+      "ms": 520
+    },
+    {
+      "name": "Mobile selection by tap",
+      "ok": true,
+      "ms": 686
+    },
+    {
+      "name": "Mobile lobby: tap to walk, d-pad, E button",
+      "ok": true,
+      "ms": 3722
+    },
+    {
+      "name": "Mobile dialogue, notebook, decision, feedback and completion",
+      "ok": true,
+      "ms": 29721
+    },
+    {
+      "name": "Small phone: title, selection and lobby fit without sideways scrolling",
+      "ok": true,
+      "ms": 627
+    },
+    {
+      "name": "The existing game still loads at the site root",
+      "ok": true,
+      "ms": 875
+    }
+  ],
+  "problems": []
+}
