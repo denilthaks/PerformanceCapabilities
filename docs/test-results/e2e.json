@@ -1,77 +1,77 @@
 {
-  "when": "2026-10-27T23:00:00.216Z",
+  "when": "2026-10-27T23:25:29.675Z",
   "results": [
     {
       "id": "splash",
       "title": "Every visit opens with the logo fading in and the neon ring blooming, then hands over to Home",
       "ok": true,
-      "ms": 9140
+      "ms": 9265
     },
     {
       "id": "home",
       "title": "Home invites the player in, over the lobby art",
       "ok": true,
-      "ms": 4497
+      "ms": 4500
     },
     {
       "id": "nav-links",
       "title": "Every navigation link leads to a working screen with an active state",
       "ok": true,
-      "ms": 45013
+      "ms": 45049
     },
     {
       "id": "locked",
       "title": "Without a pass, every floor is locked and play is refused",
       "ok": true,
-      "ms": 8035
+      "ms": 12058
     },
     {
       "id": "create",
       "title": "Getting a pass validates the name and walks straight into the lobby",
       "ok": true,
-      "ms": 6958
+      "ms": 6887
     },
     {
       "id": "lobby",
       "title": "The lobby: walking, talking, discovery-gated replies, consequences, a gold medal",
       "ok": true,
-      "ms": 15059
+      "ms": 14945
     },
     {
       "id": "replay",
       "title": "Replays keep the best medal and reveal outcomes still undiscovered",
       "ok": true,
-      "ms": 15451
+      "ms": 15300
     },
     {
       "id": "floors",
       "title": "Floors 2–4 unlock in order, play through, and carry earlier decisions forward",
       "ok": true,
-      "ms": 45568
+      "ms": 45567
     },
     {
       "id": "progress",
       "title": "Progress shows medals, the founder's memos, achievements and the notebook",
       "ok": true,
-      "ms": 13863
+      "ms": 13752
     },
     {
       "id": "settings",
       "title": "Settings: text size, and reset only after confirmation",
       "ok": true,
-      "ms": 18577
+      "ms": 18450
     },
     {
       "id": "naive",
       "title": "A player who skims (required people only, first reply offered) can finish every floor",
       "ok": true,
-      "ms": 35939
+      "ms": 35925
     },
     {
       "id": "mobile",
       "title": "Phone (375×740): no horizontal overflow, working menu, a full floor by touch",
       "ok": true,
-      "ms": 55190
+      "ms": 55247
     },
     {
       "id": "console",

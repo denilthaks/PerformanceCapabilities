@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { FRAMEWORK, GAME_CONCEPTS, LEVELS, PRINCIPLES, SEVEN_STARS, type Principle, type Verification } from '../../content/principles';
 import { ZONES } from '../../content/zones';
 import { useGame } from '../../app/game';
+import { zoneComplete } from '../../engine/progression';
 import { Link, StatusBadge } from '../common';
 import { RoomArt } from '../sprites';
 
@@ -37,29 +38,38 @@ function FlipCard({ front, back, className, label }: { front: React.ReactNode; b
 
 const GLYPH: Record<Verification | 'game', string> = { title: '✓', summary: '◐', placeholder: '?', game: '✦' };
 
-function PrincipleCard({ p, met }: { p: Principle; met: boolean }) {
-  const placeholder = p.titleStatus === 'placeholder';
+/**
+ * A principle card. It stays locked until the player resolves the floor that
+ * teaches its level; once open, it shows the principle (or, where Ben's text
+ * isn't in yet, says so).
+ */
+function PrincipleCard({ p, met, unlocked, floor }: { p: Principle; met: boolean; unlocked: boolean; floor: string }) {
+  const pending = p.titleStatus === 'placeholder';
   const bare = p.title.replace(/^Principle \d+:\s*/, '');
-  const title = placeholder ? 'Awaiting Ben' : bare.charAt(0).toUpperCase() + bare.slice(1);
+  const title = !unlocked ? 'Locked' : pending ? `Principle ${p.number}` : bare.charAt(0).toUpperCase() + bare.slice(1);
   return (
     <FlipCard
-      className={`codex-card principle${placeholder ? ' sealed' : ''}${met ? ' met' : ''}`}
+      className={`codex-card principle${unlocked ? '' : ' locked'}${unlocked && pending ? ' pending' : ''}${met ? ' met' : ''}`}
       label={`Principle ${p.number}: ${title}`}
       front={(
         <>
-          <span className="card-num">{p.number}</span>
+          <span className="card-num">{unlocked ? p.number : <span className="lock-icon" aria-hidden="true">🔒</span>}</span>
           <span className="card-title">{title}</span>
           <span className="card-foot">
-            <span className={`glyph glyph-${p.titleStatus}`} aria-hidden="true">{GLYPH[p.titleStatus]}</span>
+            {unlocked
+              ? <span className={`glyph glyph-${p.titleStatus}`} aria-hidden="true">{GLYPH[p.titleStatus]}</span>
+              : <span className="muted">Resolve {floor}</span>}
             {met && <span className="card-met">Met in play</span>}
           </span>
         </>
       )}
-      back={(
+      back={unlocked ? (
         <>
-          <span className="card-back-text">{placeholder ? 'This principle\'s title and description are waiting for Ben to supply them.' : firstSentence(p.summary)}</span>
+          <span className="card-back-text">{pending ? 'Unlocked. This principle\'s content is coming from Ben.' : firstSentence(p.summary)}</span>
           <StatusBadge status={p.summaryStatus} />
         </>
+      ) : (
+        <span className="card-back-text">Resolve the {floor} to unlock this card.</span>
       )}
     />
   );
@@ -68,6 +78,7 @@ function PrincipleCard({ p, met }: { p: Principle; met: boolean }) {
 export function PrinciplesScreen() {
   const { progress } = useGame();
   const found = new Set(progress.principles);
+  const towerDone = ZONES.every((z) => zoneComplete(progress, z));
 
   return (
     <section className="page codex">
@@ -80,25 +91,26 @@ export function PrinciplesScreen() {
       <div className="levels-3d">
         {LEVELS.map((l) => {
           const zone = ZONES.find((z) => z.alignment.startsWith(`Level ${l.number}`));
+          const unlocked = Boolean(zone && zoneComplete(progress, zone));
           return (
-            <article key={l.id} className={`slab slab-${l.number}`} data-tilt>
+            <article key={l.id} className={`slab slab-${l.number}${unlocked ? '' : ' slab-locked'}`} data-tilt>
               {zone && <div className="slab-art" aria-hidden="true"><RoomArt room={zone.room} crop={[30, 220]} /></div>}
               <div className="slab-head">
-                <span className="slab-level">Level {l.number}</span>
+                <span className="slab-level">Level {l.number}{!unlocked && <span className="slab-lock"> · 🔒 Locked</span>}</span>
                 <h2>{l.name}</h2>
                 <p className="slab-sub">{l.subtitle}</p>
-                <p className="slab-line">{l.summaryStatus === 'placeholder' ? 'Full description awaiting Ben.' : firstSentence(l.summary)}</p>
+                <p className="slab-line">{!unlocked ? `Resolve the ${zone?.place} to unlock this level's cards.` : l.summaryStatus === 'placeholder' ? 'Its full description is coming from Ben.' : firstSentence(l.summary)}</p>
                 {zone && <Link to={`/zone/${zone.id}`} className="slab-link">Played on {zone.place} ▸</Link>}
               </div>
               <div className="card-row">
-                {PRINCIPLES.filter((p) => p.level === l.id).map((p) => <PrincipleCard key={p.id} p={p} met={found.has(p.id)} />)}
+                {PRINCIPLES.filter((p) => p.level === l.id).map((p) => <PrincipleCard key={p.id} p={p} met={found.has(p.id)} unlocked={unlocked} floor={zone?.place ?? 'its floor'} />)}
               </div>
             </article>
           );
         })}
       </div>
 
-      <section className="stars-3d" aria-labelledby="stars-title">
+      <section className={`stars-3d${towerDone ? '' : ' locked'}`} aria-labelledby="stars-title">
         <div className="orbit" aria-hidden="true">
           <div className="orbit-spin">
             {Array.from({ length: 7 }, (_, i) => (
@@ -107,9 +119,11 @@ export function PrinciplesScreen() {
           </div>
         </div>
         <div className="stars-text">
-          <h2 id="stars-title">The Seven Stars</h2>
+          <h2 id="stars-title">The Seven Stars{!towerDone && <span className="slab-lock"> · 🔒 Locked</span>}</h2>
           <p>Seven human needs that drive what people achieve.</p>
-          <p className="muted"><StatusBadge status="placeholder" /> Their names are waiting for Ben. The game never scores you against them.</p>
+          {towerDone
+            ? <p className="muted"><StatusBadge status="placeholder" /> Unlocked. Their names are coming from Ben. The game never scores you against them.</p>
+            : <p className="muted">Resolve every floor of the Tower to unlock the Seven Stars.</p>}
         </div>
       </section>
 

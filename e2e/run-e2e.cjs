@@ -188,6 +188,8 @@ const checks = [
     expect(await page.locator('.floor.state-locked').count() === 4, 'all locked');
     await go(page, '/play/front-gate');
     expect((await page.textContent('h1')).includes("won't stop"), 'play refused');
+    await go(page, '/principles');
+    expect(await page.locator('.codex-card.principle.locked').count() === 12, 'all principle cards locked for a new player');
   }],
   ['create', 'Getting a pass validates the name and walks straight into the lobby', async (page) => {
     await go(page, '/');
@@ -314,6 +316,7 @@ const checks = [
     await go(page, '/principles');
     expect(await page.locator('.status-placeholder').count() >= 8, 'placeholders marked');
     expect(await page.locator('.codex-card.principle').count() === 12, 'twelve principle cards');
+    expect(await page.locator('.codex-card.principle.locked').count() === 0, 'cards unlock once their floors are resolved');
     await page.click('.codex-card.principle >> nth=0');
     expect(await page.locator('.codex-card.principle.flipped').count() === 1, 'cards flip');
     await page.waitForTimeout(700);

@@ -1,6 +1,7 @@
 // Spoken dialogue through the browser's built-in text-to-speech (Web Speech
-// API). Each character gets a consistent voice: one of the browser's English
-// voices plus their own pitch and pace. Quality depends on the device; if the
+// API). Each character gets a consistent voice: one of the device's best
+// English voices, at a natural pitch. Quality still depends on the device's
+// voices; recorded audio would be needed for truly natural speech. If the
 // browser has no speech support, the game is silent and otherwise unchanged.
 
 let enabled = true;
@@ -8,11 +9,27 @@ let voices: SpeechSynthesisVoice[] = [];
 
 const supported = typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 
+// Higher-quality voices first. Browsers ship basic "compact" voices alongside
+// neural or enhanced ones; the names tell them apart.
+function quality(v: SpeechSynthesisVoice): number {
+  const n = v.name.toLowerCase();
+  let q = 0;
+  if (/natural|neural|premium|enhanced|wavenet|online/.test(n)) q += 4;
+  if (/google|microsoft|siri|samantha|daniel|karen|serena|moira|arthur|aria|jenny|guy|sonia|libby|ryan/.test(n)) q += 2;
+  if (/^en-(gb|us|au|ie|ca)/i.test(v.lang)) q += 1;
+  if (/compact|espeak|robot|novelty|whisper|bells|bad news|zarvox|trinoids|albert|cellos/.test(n)) q -= 6;
+  if (v.localService === false) q += 1; // network voices tend to sound more natural
+  return q;
+}
+
 function loadVoices() {
   if (!supported) return;
   const all = window.speechSynthesis.getVoices();
   const english = all.filter((v) => /^en(-|_|$)/i.test(v.lang));
-  voices = english.length ? english : all;
+  const pool = (english.length ? english : all).slice().sort((a, b) => quality(b) - quality(a));
+  // Keep only the best few, so no character is stuck with a poor voice.
+  const best = pool.length ? quality(pool[0]) : 0;
+  voices = pool.filter((v, i) => i < 6 && quality(v) >= best - 2);
 }
 
 if (supported) {
@@ -35,14 +52,17 @@ function hash(s: string): number {
   return h;
 }
 
-/** A stable voice, pitch and pace for each speaker. */
+/**
+ * A stable voice and pace for each speaker. Pitch stays close to natural:
+ * shifting it far is what makes text-to-speech sound robotic.
+ */
 function profile(speaker: string): { voice?: SpeechSynthesisVoice; pitch: number; rate: number } {
-  if (speaker === 'narrator') return { voice: voices[0], pitch: 0.85, rate: 0.95 };
+  if (speaker === 'narrator') return { voice: voices[0], pitch: 0.98, rate: 0.97 };
   const h = hash(speaker);
   return {
     voice: voices.length ? voices[h % voices.length] : undefined,
-    pitch: 0.8 + ((h >> 4) % 50) / 100, // 0.8 – 1.29
-    rate: 0.95 + ((h >> 10) % 14) / 100, // 0.95 – 1.08
+    pitch: 0.96 + ((h >> 4) % 9) / 100, // 0.96 – 1.04
+    rate: 0.97 + ((h >> 10) % 7) / 100, // 0.97 – 1.03
   };
 }
 

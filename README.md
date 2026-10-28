@@ -39,9 +39,9 @@ npm run e2e        # after a build: end-to-end checks in Chromium (needs Playwri
 
 - **Opening:** every visit starts, silently, with the Performance Capability logo fading in while a dark red neon ring blooms outward from behind it. After about five seconds it closes in reverse (the rings fold back into the centre and the logo fades) and hands over to Home. Click, tap or press any key to skip. Under reduced motion it's a short, still fade.
 - **Motion:** pages ease in, embers drift in the background, panels rise as you scroll, and cards tilt in 3D under the cursor. All of it is off under reduced motion.
-- **The Codex** (Principles): three 3D level slabs with flip cards for the twelve principles, a turning Seven Stars constellation, and collectable insight cards. Sources and verification notes sit in one collapsible section.
+- **The Codex** (Principles): three 3D level slabs with flip cards for the twelve principles (each level's cards stay locked until you resolve its floor), a turning Seven Stars constellation, and collectable insight cards. Sources and verification notes sit in one collapsible section.
 - **Sound effects:** buttons, replies, discoveries, secrets and medals each have their own sound. They're synthesized live with the Web Audio API, so there are no audio files.
-- **Voice-over:** dialogue, questions and reactions are spoken in a consistent voice per character, using the browser's built-in text-to-speech. Voices vary by device; where speech isn't supported, the game is text only.
+- **Voice-over:** dialogue, questions and reactions are spoken using the device's best built-in English voices, at a natural pitch, with a consistent voice per character. It's still device text-to-speech, so it can sound synthetic; recorded or AI-generated voice files would be needed for natural acting. Where speech isn't supported, the game is text only.
 - Turn either off in **Settings**, or use 🔊 in the in-game bar.
 
 ## The Tower
