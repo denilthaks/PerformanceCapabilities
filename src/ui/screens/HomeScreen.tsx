@@ -2,7 +2,7 @@ import { useGame } from '../../app/game';
 import { continuePath } from '../../engine/progression';
 import { ZONES } from '../../content/zones';
 import { Link } from '../common';
-import { RoomArt } from '../sprites';
+import { DragonHero } from '../hero/DragonHero';
 
 export function HomeScreen() {
   const { progress } = useGame();
@@ -11,7 +11,7 @@ export function HomeScreen() {
 
   return (
     <section className="home">
-      <div className="home-art" aria-hidden="true"><RoomArt room="lobby" /></div>
+      <DragonHero />
       <div className="home-hero">
         <p className="eyebrow pixel-font">Halcyon Tower · your first week</p>
         <h1 className="home-title">

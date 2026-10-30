@@ -1,0 +1,34 @@
+/* The homepage hero's dragon scene. It lives inside the existing .home-art
+   layer (and under its gradient), so the hero text, buttons and layout are
+   unchanged. The lobby art stays underneath as the fallback. */
+.dragon-hero .dragon-fallback,
+.dragon-hero .dragon-stage { position: absolute; inset: 0; transition: opacity 1.4s ease; }
+.dragon-hero .dragon-stage { opacity: 0; background: #030202; }
+.dragon-hero .dragon-canvas { display: block; width: 100%; height: 100%; }
+.dragon-hero.is-playing .dragon-stage,
+.dragon-hero.is-still .dragon-stage { opacity: 1; }
+.dragon-hero.is-playing .dragon-fallback,
+.dragon-hero.is-still .dragon-fallback { opacity: 0; }
+
+/* Sound is opt-in: a small control in the hero's top-right corner. */
+.dragon-sound {
+  position: absolute; z-index: 2; top: 16px; right: var(--gutter);
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
+  font: inherit; font-size: 0.85rem; color: #f2d9a8; cursor: pointer;
+  background: rgba(16, 10, 4, 0.66); border: 1px solid rgba(242, 182, 90, 0.45); border-radius: 999px;
+  backdrop-filter: blur(4px);
+  transition: border-color var(--t), background var(--t);
+}
+.dragon-sound:hover { border-color: rgba(242, 182, 90, 0.85); background: rgba(40, 24, 6, 0.8); }
+.dragon-sound:focus-visible { outline: none; box-shadow: var(--focus); }
+.dragon-sound[aria-pressed='true'] { color: #ffe3b0; border-color: rgba(242, 182, 90, 0.9); }
+
+/* Narrow screens: the dragons sit behind the text, so darken a little more for legibility. */
+@media (max-width: 760px) {
+  .dragon-hero.is-playing::after,
+  .dragon-hero.is-still::after {
+    background:
+      linear-gradient(0deg, rgba(7, 8, 12, 0.92) 0%, rgba(7, 8, 12, 0.55) 45%, rgba(7, 8, 12, 0.35) 100%);
+  }
+  .dragon-sound { top: 10px; }
+}
