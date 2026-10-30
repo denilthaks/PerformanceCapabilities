@@ -5,6 +5,7 @@ import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';
 import './styles/game.css';
+import './styles/dragon-hero.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
